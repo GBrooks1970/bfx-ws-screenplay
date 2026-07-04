@@ -1,0 +1,6 @@
+node_modules/
+reports/
+cypress/screenshots/
+cypress/videos/
+dist/
+*.tsbuildinfo

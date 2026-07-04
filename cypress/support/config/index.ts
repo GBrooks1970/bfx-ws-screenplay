@@ -1,0 +1,52 @@
+/**
+ * The single configuration module required by ADR-005: every timeout is a
+ * named constant here; symbols and endpoints are config, not code.
+ */
+
+export const ENDPOINTS = {
+  /** The system under test (spec Section 2.1). */
+  public: 'wss://api-pub.bitfinex.com/ws/2',
+  /** Non-routable local address for offline connection-failure scenarios. */
+  unreachable: 'wss://127.0.0.1:9',
+  /** Deliberately malformed for the invalid-endpoint scenario. */
+  malformed: 'not-a-websocket-url',
+} as const;
+
+export type EndpointKey = keyof typeof ENDPOINTS;
+
+export const TIMEOUTS = {
+  /** ADR-005: connection timeout. */
+  connectionMs: 5_000,
+  /** ADR-005: default bounded wait for a matching message. */
+  messageWaitMs: 10_000,
+  /**
+   * Heartbeats arrive roughly every 15 s on quiet channels (verified against
+   * live docs 4 July 2026), so heartbeat scenarios get their own constant
+   * (spec Section 11, confirmation 1).
+   */
+  heartbeatWaitMs: 30_000,
+} as const;
+
+export const SYMBOLS = {
+  /** High-liquidity primary (spec Section 11, confirmation 1). */
+  primary: 'tBTCUSD',
+  /** Second parameterised pair for SPEC-004 outlines. */
+  secondary: 'tETHUSD',
+  /**
+   * Quiet pair for heartbeat scenarios: selected empirically when first
+   * needed (SPEC-002+), against the documented criterion — typically minutes
+   * between trades, checked via public REST 24h-volume data.
+   */
+  quiet: null,
+} as const;
+
+/**
+ * Platform status/maintenance codes (spec Section 6.5), verified against
+ * https://docs.bitfinex.com/docs/ws-general on 4 July 2026:
+ * 20051 = stop/restart (reconnect), 20060 = entering maintenance.
+ * 20061 (maintenance ended) deliberately excluded — it signals recovery.
+ */
+export const ENVIRONMENT_BLOCKED_INFO_CODES = [20051, 20060] as const;
+
+/** `platform.status` value meaning operative in the info event. */
+export const OPERATIVE_PLATFORM_STATUS = 1;

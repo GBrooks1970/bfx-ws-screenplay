@@ -1,0 +1,38 @@
+{
+  "name": "bfx-ws-screenplay",
+  "version": "0.1.0",
+  "private": true,
+  "description": "WebSocket test automation against the Bitfinex public WebSocket API v2 - Cypress, TypeScript, Cucumber BDD and an in-house Screenplay pattern.",
+  "author": "Gary Brooks",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "overrides": {
+    "mocha": {
+      "diff": "^8.0.3",
+      "serialize-javascript": "^7.0.5"
+    }
+  },
+  "scripts": {
+    "cy:open": "cypress open",
+    "test:smoke": "cypress run --env tags=@smoke",
+    "test:extended": "cypress run --env tags=\"@smoke or @extended\"",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@badeball/cypress-cucumber-preprocessor": "25.0.0",
+    "@bahmutov/cypress-esbuild-preprocessor": "2.2.8",
+    "@eslint/js": "10.0.1",
+    "@types/node": "26.1.0",
+    "@types/ws": "8.18.1",
+    "cypress": "15.17.0",
+    "esbuild": "0.28.1",
+    "eslint": "10.6.0",
+    "prettier": "3.9.4",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.62.1",
+    "ws": "8.21.0"
+  }
+}
