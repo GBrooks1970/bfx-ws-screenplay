@@ -1,3 +1,12 @@
+export {
+  isBookLevel,
+  isSubscribedBookAck,
+  LEVEL_AMOUNT_INDEX,
+  LEVEL_COUNT_INDEX,
+  LEVEL_PRICE_INDEX,
+  type BookLevel,
+  type SubscribedBookAck,
+} from './bookChannel';
 export { isPlatformInfoEvent, type PlatformInfoEvent } from './infoEvent';
 export { isPongEvent, type PongEvent } from './pongEvent';
 export { isSubscribedAck, type SubscribedAck } from './subscribedAck';
