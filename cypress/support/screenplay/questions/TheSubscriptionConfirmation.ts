@@ -3,7 +3,7 @@ import { isSubscribedAck, type SubscribedAck } from '../../../schemas';
 import { AssertionError, Question } from '../core';
 
 /** Channels whose subscriptions this question can confirm (grows per SPEC unit). */
-export type SubscribableChannel = 'ticker' | 'trades';
+export type SubscribableChannel = 'ticker' | 'trades' | 'book';
 
 /** ack payload incl. `chanId` (spec Section 6.4) — answered from the buffer, idempotently. */
 export class TheSubscriptionConfirmation {

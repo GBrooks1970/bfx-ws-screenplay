@@ -1,5 +1,8 @@
+export { ChecksumVerifications, type ChecksumVerification } from './ChecksumVerifications';
 export { ReceivedUpdates, type PairedTradeUpdate } from './ReceivedUpdates';
+export { TheBookConfirmation, type BookSubscriptionSettings } from './TheBookConfirmation';
 export { TheChannelSnapshot } from './TheChannelSnapshot';
+export { TheMaintainedBook } from './TheMaintainedBook';
 export { TheConnectionOutcome } from './TheConnectionOutcome';
 export { ThePlatformInfo } from './ThePlatformInfo';
 export { ThePongResponse } from './ThePongResponse';

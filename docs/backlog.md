@@ -8,9 +8,9 @@
 
 # bfx-ws-screenplay — Backlog
 
-**Version:** 2 — SPEC-002 and SPEC-003 complete
+**Version:** 3 — SPEC-004 (flagship) complete
 **Last Updated:** 2026-07-05
-**Based on:** `SPECIFICATION.md` (normative design spec) and the SPEC-001/002/003 review packs (approved 4–5 July 2026)
+**Based on:** `SPECIFICATION.md` (normative design spec) and the SPEC-001..004 review packs (approved 4–5 July 2026)
 
 This backlog tracks the SPEC-unit roadmap and any risks against it; ordering follows the
 specification's mandatory implementation order (SPEC-001 → 006, 007 stretch).
@@ -101,7 +101,13 @@ feature file → **Gary's review** → implement → three consecutive green run
      `te` by ~50 ms). Predicate DSL contract extended (`label` + `where` on channel frames, per
      `docs/predicate-dsl.md`); `ObserveAnExecutedTrade` task added to the spec catalogue; CI
      `workflow_dispatch` gained a `suite` input so `@extended` units get their DoD CI runs.
-4. **SPEC-004 — Order book & checksum verification (flagship)** — PLANNED
+4. **SPEC-004 — Order book & checksum verification (flagship)** ✅ COMPLETE 2026-07-05
+   - 4 scenarios (`@extended`), including 5 consecutive CRC-32 checksum matches against the
+     locally maintained book. Algorithm proven by live probe before drafting (8/8 checksums,
+     623 updates applied). Buffer-index determinism: each `cs` frame is verified against the
+     book folded from exactly the frames that preceded it. Pure fold/CRC-32 functions in
+     `cypress/support/books/`; zero driver changes. Catalogue additions: `EnableChecksumFrames`,
+     `ObserveBookUpdates`.
 5. **SPEC-005 — Candles channel** — PLANNED
 6. **SPEC-006 — Negative paths & unsubscription** — PLANNED
 7. **SPEC-007 — Sequencing** — STRETCH (revisit after SPEC-006)
@@ -127,9 +133,8 @@ feature file → **Gary's review** → implement → three consecutive green run
 
 | Sprint | Priority | Items | Total Effort | Start | End |
 |---|---|---|---|---|---|
-| Done | HIGH | SPEC-002, SPEC-003 | ~6 hrs actual | 2026-07-04 | 2026-07-05 |
-| Current | HIGH | SPEC-004 (flagship) | 5–8 hrs | TBD | TBD |
-| Later | MEDIUM | SPEC-005, SPEC-006 | 6–8 hrs | TBD | TBD |
+| Done | HIGH | SPEC-002, SPEC-003, SPEC-004 | ~9 hrs actual | 2026-07-04 | 2026-07-05 |
+| Current | MEDIUM | SPEC-005, SPEC-006 | 6–8 hrs | TBD | TBD |
 
 ---
 

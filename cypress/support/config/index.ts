@@ -49,6 +49,19 @@ export const SYMBOLS = {
 } as const;
 
 /**
+ * Order-book subscription settings (SPEC-004). P0/F0/25 is the combination
+ * the checksum algorithm was proven against live (probe 5 July 2026: 8/8).
+ */
+export const BOOK_SETTINGS = {
+  prec: 'P0',
+  freq: 'F0',
+  len: '25',
+} as const;
+
+/** conf flag enabling [chanId,'cs',CHECKSUM] frames (docs + probe, 5 July 2026). */
+export const CHECKSUM_CONF_FLAG = 131072;
+
+/**
  * Platform status/maintenance codes (spec Section 6.5), verified against
  * https://docs.bitfinex.com/docs/ws-general on 4 July 2026:
  * 20051 = stop/restart (reconnect), 20060 = entering maintenance.

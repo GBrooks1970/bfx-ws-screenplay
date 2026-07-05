@@ -60,9 +60,9 @@ buffer); layer 4 translates.
 | Unit | Behaviour | Status |
 |---|---|---|
 | SPEC-001 | Connection lifecycle & framework skeleton | ✅ Done |
-| SPEC-002 | Ticker channel | Planned |
-| SPEC-003 | Trades channel | Planned |
-| SPEC-004 | Order book channel & checksum verification (flagship) | Planned |
+| SPEC-002 | Ticker channel | ✅ Done |
+| SPEC-003 | Trades channel | ✅ Done |
+| SPEC-004 | Order book channel & checksum verification (flagship) | ✅ Done |
 | SPEC-005 | Candles channel | Planned |
 | SPEC-006 | Negative paths & unsubscription | Planned |
 | SPEC-007 | Sequencing | Stretch (out of initial scope) |
@@ -74,10 +74,14 @@ Requires Node 20+ (CI runs Node 24, per `.nvmrc`).
 ```sh
 npm ci
 npm run test:smoke      # @smoke scenarios (SPEC-001, SPEC-002)
-npm run test:extended   # full tagged suite — used by the nightly CI job
+npm run test:extended   # full tagged suite — nightly in CI, or dispatched with suite=extended
 npm run lint
 npm run typecheck
 ```
+
+The flagship assertion (SPEC-004): a locally maintained order-book replica must match the
+platform's own CRC-32 checksum frames five times consecutively — folded with buffer-index
+determinism, so each checksum is compared against exactly the updates that preceded it.
 
 Cucumber HTML/JSON reports are written to `reports/` (published as CI
 artefacts). Scenarios blocked by platform maintenance abort as

@@ -1,7 +1,10 @@
 export { AttemptConnection } from './AttemptConnection';
 export { CloseTheConnection } from './CloseTheConnection';
+export { EnableChecksumFrames } from './EnableChecksumFrames';
 export { EstablishConnection } from './EstablishConnection';
 export { ObserveAnExecutedTrade, type ObservedExecution } from './ObserveAnExecutedTrade';
+export { ObserveBookUpdates } from './ObserveBookUpdates';
 export { SendPing } from './SendPing';
+export { SubscribeToTheOrderBook } from './SubscribeToTheOrderBook';
 export { SubscribeToTicker } from './SubscribeToTicker';
 export { SubscribeToTrades } from './SubscribeToTrades';
