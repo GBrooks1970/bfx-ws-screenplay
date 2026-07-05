@@ -3,34 +3,12 @@
  * Verified against https://docs.bitfinex.com/reference/ws-public-ticker,
  * 4 July 2026.
  *
- * Ack:      { "event":"subscribed","channel":"ticker","chanId":N,"symbol":"tBTCUSD","pair":"BTCUSD" }
+ * Ack:      see subscribedAck.ts (shared shape across trading-pair channels).
  * Payload:  [BID, BID_SIZE, ASK, ASK_SIZE, DAILY_CHANGE, DAILY_CHANGE_RELATIVE,
  *            LAST_PRICE, VOLUME, HIGH, LOW] — ten finite numbers, identical shape
  *           for snapshot and update. Funding (f-prefixed) tickers use a longer
  *           array and are rejected by the length check by design.
  */
-
-export type SubscribedTickerAck = {
-  event: 'subscribed';
-  channel: 'ticker';
-  chanId: number;
-  symbol: string;
-  pair: string;
-};
-
-export function isSubscribedTickerAck(frame: unknown): frame is SubscribedTickerAck {
-  if (typeof frame !== 'object' || frame === null || Array.isArray(frame)) {
-    return false;
-  }
-  const candidate = frame as Record<string, unknown>;
-  return (
-    candidate.event === 'subscribed' &&
-    candidate.channel === 'ticker' &&
-    typeof candidate.chanId === 'number' &&
-    typeof candidate.symbol === 'string' &&
-    typeof candidate.pair === 'string'
-  );
-}
 
 export type TickerFields = readonly [
   number, // BID

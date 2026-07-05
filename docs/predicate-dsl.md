@@ -10,7 +10,13 @@ stays in Questions.** This keeps the Node driver dumb and the DSL small.
 ```ts
 type PredicateSpec =
   | { kind: 'event'; event: string; where?: FieldMatch[] }   // JSON event objects
-  | { kind: 'channel'; chanId: number; frameType?: 'hb' | 'data' } // array frames
+  | {
+      kind: 'channel';
+      chanId: number;
+      frameType?: 'hb' | 'data';
+      label?: string;          // matches frame[1], e.g. 'te', 'tu', 'cs'
+      where?: FieldMatch[];    // numeric dot paths into the array frame, e.g. '2.0'
+    }
   | { kind: 'any' };                                          // diagnostics / env-block scans
 
 type FieldMatch = {
@@ -37,3 +43,15 @@ Examples in use:
 
 **The DSL is a contract.** Any new `kind` or operator requires a note in this
 document before the code that uses it.
+
+## Contract changes
+
+- **5 July 2026 (SPEC-003 review Q1, approved):** channel predicates gain
+  `label` (matches `frame[1]` — `'te'`/`'tu'` now, `'cs'` for SPEC-004
+  checksums later) and `where` (FieldMatches evaluated against the whole array
+  frame using numeric dot paths, e.g. path `'2.0'` = the trade ID inside the
+  payload). `where` rides alongside `label` so a wait can target *the `tu` for
+  trade N* as a single bounded condition (ADR-005), rather than polling
+  broadly and filtering client-side — the pairing invariant in SPEC-003 is the
+  motivating case. Example:
+  `{ kind: 'channel', chanId, label: 'tu', where: [{ path: '2.0', op: 'eq', value: 1945024471 }] }`

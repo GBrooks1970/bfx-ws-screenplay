@@ -20,8 +20,19 @@ export type FieldMatch = {
 export type PredicateSpec =
   /** JSON event objects, e.g. info, subscribed, error, pong. */
   | { kind: 'event'; event: string; where?: FieldMatch[] }
-  /** Array frames on a channel, e.g. [chanId, ...] data or [chanId, 'hb']. */
-  | { kind: 'channel'; chanId: number; frameType?: 'hb' | 'data' }
+  /**
+   * Array frames on a channel, e.g. [chanId, ...] data or [chanId, 'hb'].
+   * `label` matches frame[1] ('te', 'tu', 'cs', ...); `where` paths are
+   * numeric dot paths into the array frame (contract change, 5 July 2026 —
+   * see docs/predicate-dsl.md).
+   */
+  | {
+      kind: 'channel';
+      chanId: number;
+      frameType?: 'hb' | 'data';
+      label?: string;
+      where?: FieldMatch[];
+    }
   /** Any frame — used by environment-blocked scanning and diagnostics. */
   | { kind: 'any' };
 

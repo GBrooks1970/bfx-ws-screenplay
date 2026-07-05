@@ -8,9 +8,9 @@
 
 # bfx-ws-screenplay — Backlog
 
-**Version:** 1 — initial backlog at registry onboarding (SPEC-001 complete)
-**Last Updated:** 2026-07-04
-**Based on:** `SPECIFICATION.md` (normative design spec) and the SPEC-001 review pack (approved 4 July 2026)
+**Version:** 2 — SPEC-002 and SPEC-003 complete
+**Last Updated:** 2026-07-05
+**Based on:** `SPECIFICATION.md` (normative design spec) and the SPEC-001/002/003 review packs (approved 4–5 July 2026)
 
 This backlog tracks the SPEC-unit roadmap and any risks against it; ordering follows the
 specification's mandatory implementation order (SPEC-001 → 006, 007 stretch).
@@ -91,10 +91,16 @@ feature file → **Gary's review** → implement → three consecutive green run
    - 5/5 scenarios; three consecutive green runs local + CI; review pack approved on all four
      questions; catalogue additions (AttemptConnection, TheConnectionOutcome,
      TheSessionRegistration, `ws:sessions`) recorded in the spec.
-2. **SPEC-002 — Ticker channel** — READY TO START
-   - **Acceptance:** ack with `chanId`; schema-valid snapshot; ≥1 schema-valid update within
-     timeout; invariants bid ≤ ask, numeric fields finite.
-3. **SPEC-003 — Trades channel** — PLANNED
+2. **SPEC-002 — Ticker channel** ✅ COMPLETE 2026-07-05
+   - 3 scenarios (`@smoke`); three consecutive green runs local + CI. Field discoveries recorded
+     in-code: live payloads carry an undocumented 11th element (guard validates the 10 documented
+     fields, tolerates extras); new named `updateWaitMs = 30 s` for at-least-one-update waits
+     (ticker pushes are event-driven, 5–8 s apart on tBTCUSD).
+3. **SPEC-003 — Trades channel** ✅ COMPLETE 2026-07-05
+   - 4 scenarios (`@extended`); live probe matched docs exactly (4-element trades; `tu` follows
+     `te` by ~50 ms). Predicate DSL contract extended (`label` + `where` on channel frames, per
+     `docs/predicate-dsl.md`); `ObserveAnExecutedTrade` task added to the spec catalogue; CI
+     `workflow_dispatch` gained a `suite` input so `@extended` units get their DoD CI runs.
 4. **SPEC-004 — Order book & checksum verification (flagship)** — PLANNED
 5. **SPEC-005 — Candles channel** — PLANNED
 6. **SPEC-006 — Negative paths & unsubscription** — PLANNED
@@ -121,8 +127,8 @@ feature file → **Gary's review** → implement → three consecutive green run
 
 | Sprint | Priority | Items | Total Effort | Start | End |
 |---|---|---|---|---|---|
-| Current | HIGH | SPEC-002 | 3–5 hrs | 2026-07-04 | TBD |
-| Next | HIGH | SPEC-003, SPEC-004 | 8–12 hrs | TBD | TBD |
+| Done | HIGH | SPEC-002, SPEC-003 | ~6 hrs actual | 2026-07-04 | 2026-07-05 |
+| Current | HIGH | SPEC-004 (flagship) | 5–8 hrs | TBD | TBD |
 | Later | MEDIUM | SPEC-005, SPEC-006 | 6–8 hrs | TBD | TBD |
 
 ---

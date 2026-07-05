@@ -47,13 +47,16 @@ export function frameMatches(frame: unknown, spec: PredicateSpec): boolean {
         return false;
       }
       const isHeartbeat = frame[1] === 'hb';
-      if (spec.frameType === 'hb') {
-        return isHeartbeat;
+      if (spec.frameType === 'hb' && !isHeartbeat) {
+        return false;
       }
-      if (spec.frameType === 'data') {
-        return !isHeartbeat;
+      if (spec.frameType === 'data' && isHeartbeat) {
+        return false;
       }
-      return true;
+      if (spec.label !== undefined && frame[1] !== spec.label) {
+        return false;
+      }
+      return (spec.where ?? []).every((match) => fieldMatches(frame, match));
     }
   }
 }

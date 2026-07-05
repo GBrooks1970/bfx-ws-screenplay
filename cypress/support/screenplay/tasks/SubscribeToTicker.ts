@@ -1,6 +1,6 @@
 import { CommunicateOverWebSocket } from '../abilities/CommunicateOverWebSocket';
 import { SYMBOLS } from '../../config';
-import { isSubscribedTickerAck } from '../../../schemas';
+import { isSubscribedAck } from '../../../schemas';
 import { type Actor, AssertionError, Task } from '../core';
 
 /**
@@ -41,7 +41,7 @@ export class SubscribeToTicker extends Task {
       )
       .then((frames) => {
         const first = frames[0];
-        if (!first || !isSubscribedTickerAck(first.frame)) {
+        if (!first || !isSubscribedAck(first.frame, 'ticker')) {
           throw new AssertionError('The subscription ack does not match the ticker ack schema');
         }
         actor.remembers('ticker:chanId', first.frame.chanId);
