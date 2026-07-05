@@ -33,6 +33,13 @@ export const TIMEOUTS = {
    * (ADR-005: named condition-waits, never retries).
    */
   updateWaitMs: 30_000,
+  /**
+   * Candle updates tick roughly every 15 s on 1m tBTCUSD (live probe,
+   * 5 July 2026: first update at 17.6 s) — the generic updateWaitMs leaves
+   * too little margin for "at least one update" waits on this channel
+   * (SPEC-005 review Q2, approved).
+   */
+  candleUpdateWaitMs: 45_000,
 } as const;
 
 export const SYMBOLS = {
@@ -46,6 +53,16 @@ export const SYMBOLS = {
    * between trades, checked via public REST 24h-volume data.
    */
   quiet: null,
+} as const;
+
+/**
+ * Candles subscription settings (SPEC-005): channel is keyed, not symboled —
+ * `trade:TIMEFRAME:SYMBOL`. Timeframe is config, not code (ADR-005).
+ */
+export const CANDLES = {
+  timeframe: '1m',
+  timeframeMs: 60_000,
+  key: `trade:1m:${SYMBOLS.primary}`,
 } as const;
 
 /**

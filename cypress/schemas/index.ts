@@ -7,6 +7,18 @@ export {
   type BookLevel,
   type SubscribedBookAck,
 } from './bookChannel';
+export {
+  CANDLE_CLOSE_INDEX,
+  CANDLE_HIGH_INDEX,
+  CANDLE_LOW_INDEX,
+  CANDLE_MTS_INDEX,
+  CANDLE_OPEN_INDEX,
+  CANDLE_VOLUME_INDEX,
+  isCandleFields,
+  isSubscribedCandlesAck,
+  type CandleFields,
+  type SubscribedCandlesAck,
+} from './candlesChannel';
 export { isPlatformInfoEvent, type PlatformInfoEvent } from './infoEvent';
 export { isPongEvent, type PongEvent } from './pongEvent';
 export { isSubscribedAck, type SubscribedAck } from './subscribedAck';

@@ -8,9 +8,9 @@
 
 # bfx-ws-screenplay — Backlog
 
-**Version:** 3 — SPEC-004 (flagship) complete
+**Version:** 4 — SPEC-005 complete
 **Last Updated:** 2026-07-05
-**Based on:** `SPECIFICATION.md` (normative design spec) and the SPEC-001..004 review packs (approved 4–5 July 2026)
+**Based on:** `SPECIFICATION.md` (normative design spec) and the SPEC-001..005 review packs (approved 4–5 July 2026)
 
 This backlog tracks the SPEC-unit roadmap and any risks against it; ordering follows the
 specification's mandatory implementation order (SPEC-001 → 006, 007 stretch).
@@ -108,7 +108,12 @@ feature file → **Gary's review** → implement → three consecutive green run
      book folded from exactly the frames that preceded it. Pure fold/CRC-32 functions in
      `cypress/support/books/`; zero driver changes. Catalogue additions: `EnableChecksumFrames`,
      `ObserveBookUpdates`.
-5. **SPEC-005 — Candles channel** — PLANNED
+5. **SPEC-005 — Candles channel** ✅ COMPLETE 2026-07-05
+   - 3 scenarios (`@extended`). Field-order trap documented ([MTS, OPEN, CLOSE, HIGH, LOW,
+     VOLUME] — close before high/low); candles ack is key-only (no symbol/pair) so it has its
+     own ack schema; newest-first snapshot ordering asserted deliberately (observed 240/240,
+     undocumented — review Q1); new named `candleUpdateWaitMs = 45 s` (updates tick ~15 s —
+     review Q2).
 6. **SPEC-006 — Negative paths & unsubscription** — PLANNED
 7. **SPEC-007 — Sequencing** — STRETCH (revisit after SPEC-006)
 
@@ -133,8 +138,8 @@ feature file → **Gary's review** → implement → three consecutive green run
 
 | Sprint | Priority | Items | Total Effort | Start | End |
 |---|---|---|---|---|---|
-| Done | HIGH | SPEC-002, SPEC-003, SPEC-004 | ~9 hrs actual | 2026-07-04 | 2026-07-05 |
-| Current | MEDIUM | SPEC-005, SPEC-006 | 6–8 hrs | TBD | TBD |
+| Done | HIGH | SPEC-002..005 | ~11 hrs actual | 2026-07-04 | 2026-07-05 |
+| Current | MEDIUM | SPEC-006 (final in-scope unit) | 3–4 hrs | TBD | TBD |
 
 ---
 

@@ -1,9 +1,12 @@
 import { CommunicateOverWebSocket } from '../abilities/CommunicateOverWebSocket';
 import { foldBook, type MaintainedBook } from '../../books';
+import { CANDLES } from '../../config';
 import {
   isBookLevel,
+  isCandleFields,
   isTickerFields,
   isTradeFields,
+  type CandleFields,
   type TickerFields,
   type TradeFields,
 } from '../../../schemas';
@@ -11,6 +14,30 @@ import { AssertionError, Question } from '../core';
 
 /** first data frame after the ack (spec Section 6.4). */
 export class TheChannelSnapshot {
+  /** Raw snapshot order preserved — the newest-first assertion depends on it. */
+  static ofCandles(): Question<CandleFields[]> {
+    return Question.about('the candles snapshot', (actor) => {
+      const chanId = actor.recalled<number>('candles:chanId');
+      return CommunicateOverWebSocket.as(actor)
+        .messagesWhere(
+          { kind: 'channel', chanId, frameType: 'data' },
+          { description: 'the candles snapshot' },
+        )
+        .then((frames): CandleFields[] => {
+          const first = frames[0];
+          const payload = Array.isArray(first?.frame) ? (first.frame as unknown[])[1] : undefined;
+          if (!Array.isArray(payload)) {
+            throw new AssertionError('The candles snapshot is not an array of candles');
+          }
+          return payload.map((candle) => {
+            if (!isCandleFields(candle, CANDLES.timeframeMs)) {
+              throw new AssertionError('A snapshot candle does not match the candle schema');
+            }
+            return candle;
+          });
+        });
+    });
+  }
   /** The snapshot alone, folded into a book — atomic, so side invariants cannot race. */
   static ofTheBook(): Question<MaintainedBook> {
     return Question.about('the book snapshot', (actor) => {

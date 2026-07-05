@@ -1,6 +1,7 @@
 export { ChecksumVerifications, type ChecksumVerification } from './ChecksumVerifications';
 export { ReceivedUpdates, type PairedTradeUpdate } from './ReceivedUpdates';
 export { TheBookConfirmation, type BookSubscriptionSettings } from './TheBookConfirmation';
+export { TheCandlesConfirmation } from './TheCandlesConfirmation';
 export { TheChannelSnapshot } from './TheChannelSnapshot';
 export { TheMaintainedBook } from './TheMaintainedBook';
 export { TheConnectionOutcome } from './TheConnectionOutcome';

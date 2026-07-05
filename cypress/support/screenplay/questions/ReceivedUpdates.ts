@@ -1,8 +1,10 @@
 import { CommunicateOverWebSocket } from '../abilities/CommunicateOverWebSocket';
-import { TIMEOUTS } from '../../config';
+import { CANDLES, TIMEOUTS } from '../../config';
 import {
+  isCandleFields,
   isTickerFields,
   isTradeFields,
+  type CandleFields,
   type TickerFields,
   type TradeFields,
 } from '../../../schemas';
@@ -67,6 +69,32 @@ export class ReceivedUpdates {
               : undefined;
             if (!isTradeFields(payload)) {
               throw new AssertionError('An executed trade does not match the trade schema');
+            }
+            return payload;
+          }),
+        );
+    });
+  }
+
+  static candles(atLeast: number): Question<CandleFields[]> {
+    return Question.about(`at least ${atLeast} candle update(s)`, (actor) => {
+      const chanId = actor.recalled<number>('candles:chanId');
+      return CommunicateOverWebSocket.as(actor)
+        .messagesWhere(
+          { kind: 'channel', chanId, frameType: 'data' },
+          {
+            minCount: atLeast + 1, // + the snapshot frame
+            timeoutMs: TIMEOUTS.candleUpdateWaitMs,
+            description: `${atLeast} candle update(s) after the snapshot`,
+          },
+        )
+        .then((frames): CandleFields[] =>
+          frames.slice(1).map((buffered) => {
+            const payload = Array.isArray(buffered.frame)
+              ? (buffered.frame as unknown[])[1]
+              : undefined;
+            if (!isCandleFields(payload, CANDLES.timeframeMs)) {
+              throw new AssertionError('A candle update does not match the candle schema');
             }
             return payload;
           }),
