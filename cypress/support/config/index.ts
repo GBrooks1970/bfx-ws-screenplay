@@ -25,6 +25,14 @@ export const TIMEOUTS = {
    * (spec Section 11, confirmation 1).
    */
   heartbeatWaitMs: 30_000,
+  /**
+   * Channel data pushes are event-driven and throttled: live probing
+   * (5 July 2026) showed ticker updates on tBTCUSD arriving 5-8 s apart,
+   * with longer gaps in quiet minutes — the 10 s default is marginal for
+   * "at least one update" waits, so they get their own bounded constant
+   * (ADR-005: named condition-waits, never retries).
+   */
+  updateWaitMs: 30_000,
 } as const;
 
 export const SYMBOLS = {
