@@ -44,6 +44,12 @@ export const isIn = <T>(candidates: readonly T[]): Expectation<T> =>
 export const isAtMost = (limit: number): Expectation<number> =>
   new Expectation(`be at most ${limit}`, (actual) => actual <= limit);
 
+/** Named predicate expectation — the home of semantic invariants (ADR-004 category c). */
+export const satisfies = <T>(
+  description: string,
+  predicate: (actual: T) => boolean,
+): Expectation<T> => new Expectation(description, predicate);
+
 /**
  * Ensure delegates the assertion itself to an Expectation over a Question's
  * answer, keeping step definitions logic-free (ADR-003).
