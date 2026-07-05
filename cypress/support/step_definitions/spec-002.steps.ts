@@ -22,7 +22,7 @@ When('she subscribes to the ticker for the primary symbol', () =>
 Then('the ticker subscription is confirmed with a channel ID', () =>
   theActor().attemptsTo(
     Ensure.that(
-      TheSubscriptionConfirmation.channelId(),
+      TheSubscriptionConfirmation.channelId('ticker'),
       satisfies('be a positive channel ID', (chanId) => Number.isFinite(chanId) && chanId > 0),
     ),
   ),
@@ -30,7 +30,7 @@ Then('the ticker subscription is confirmed with a channel ID', () =>
 
 Then('the confirmation echoes the primary symbol', () =>
   theActor().attemptsTo(
-    Ensure.that(TheSubscriptionConfirmation.symbol(), equals<string>(SYMBOLS.primary)),
+    Ensure.that(TheSubscriptionConfirmation.symbol('ticker'), equals<string>(SYMBOLS.primary)),
   ),
 );
 

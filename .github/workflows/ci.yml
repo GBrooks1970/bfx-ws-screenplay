@@ -5,6 +5,12 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      suite:
+        description: 'Test suite to run'
+        type: choice
+        options: [smoke, extended]
+        default: smoke
   schedule:
     # Nightly extended run only — live-API etiquette (spec Section 9):
     # do not hammer the public endpoint on every commit.
@@ -12,7 +18,7 @@ on:
 
 jobs:
   smoke:
-    if: github.event_name != 'schedule'
+    if: github.event_name != 'schedule' && (github.event_name != 'workflow_dispatch' || inputs.suite == 'smoke')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -31,7 +37,8 @@ jobs:
           path: reports/
 
   extended:
-    if: github.event_name == 'schedule'
+    # Nightly, or dispatched on demand — used for each @extended unit's DoD runs.
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.suite == 'extended')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5

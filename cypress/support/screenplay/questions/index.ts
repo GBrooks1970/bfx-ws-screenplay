@@ -1,4 +1,4 @@
-export { ReceivedUpdates } from './ReceivedUpdates';
+export { ReceivedUpdates, type PairedTradeUpdate } from './ReceivedUpdates';
 export { TheChannelSnapshot } from './TheChannelSnapshot';
 export { TheConnectionOutcome } from './TheConnectionOutcome';
 export { ThePlatformInfo } from './ThePlatformInfo';
