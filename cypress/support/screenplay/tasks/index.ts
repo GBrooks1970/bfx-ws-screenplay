@@ -5,6 +5,7 @@ export { EstablishConnection } from './EstablishConnection';
 export { ObserveAnExecutedTrade, type ObservedExecution } from './ObserveAnExecutedTrade';
 export { ObserveBookUpdates } from './ObserveBookUpdates';
 export { SendPing } from './SendPing';
+export { SubscribeToCandles } from './SubscribeToCandles';
 export { SubscribeToTheOrderBook } from './SubscribeToTheOrderBook';
 export { SubscribeToTicker } from './SubscribeToTicker';
 export { SubscribeToTrades } from './SubscribeToTrades';
