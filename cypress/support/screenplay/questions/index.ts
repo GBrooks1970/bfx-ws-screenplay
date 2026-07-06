@@ -1,4 +1,8 @@
 export { ChecksumVerifications, type ChecksumVerification } from './ChecksumVerifications';
+export { HeartbeatsObservedOn } from './HeartbeatsObservedOn';
+export { TheChannelSilence } from './TheChannelSilence';
+export { TheSubscriptionError } from './TheSubscriptionError';
+export { TheUnsubscriptionConfirmation, type UnsubscribedAck } from './TheUnsubscriptionConfirmation';
 export { ReceivedUpdates, type PairedTradeUpdate } from './ReceivedUpdates';
 export { TheBookConfirmation, type BookSubscriptionSettings } from './TheBookConfirmation';
 export { TheCandlesConfirmation } from './TheCandlesConfirmation';

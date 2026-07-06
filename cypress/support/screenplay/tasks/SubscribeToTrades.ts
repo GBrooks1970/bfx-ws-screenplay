@@ -9,6 +9,10 @@ export class SubscribeToTrades extends Task {
     return new SubscribeToTrades(SYMBOLS.primary);
   }
 
+  static forTheQuietSymbol(): SubscribeToTrades {
+    return new SubscribeToTrades(SYMBOLS.quiet);
+  }
+
   private constructor(private readonly symbol: string) {
     super(`subscribe to trades for ${symbol}`);
   }

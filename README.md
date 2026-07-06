@@ -64,7 +64,7 @@ buffer); layer 4 translates.
 | SPEC-003 | Trades channel | ✅ Done |
 | SPEC-004 | Order book channel & checksum verification (flagship) | ✅ Done |
 | SPEC-005 | Candles channel | ✅ Done |
-| SPEC-006 | Negative paths & unsubscription | Planned |
+| SPEC-006 | Negative paths & unsubscription | ✅ Done |
 | SPEC-007 | Sequencing | Stretch (out of initial scope) |
 
 ## How to run
