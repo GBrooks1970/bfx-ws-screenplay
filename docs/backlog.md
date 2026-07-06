@@ -8,9 +8,9 @@
 
 # bfx-ws-screenplay — Backlog
 
-**Version:** 4 — SPEC-005 complete
+**Version:** 5 — SPEC-006 complete: the full in-scope roadmap (SPEC-001..006) is done
 **Last Updated:** 2026-07-05
-**Based on:** `SPECIFICATION.md` (normative design spec) and the SPEC-001..005 review packs (approved 4–5 July 2026)
+**Based on:** `SPECIFICATION.md` (normative design spec) and the SPEC-001..006 review packs (approved 4–5 July 2026)
 
 This backlog tracks the SPEC-unit roadmap and any risks against it; ordering follows the
 specification's mandatory implementation order (SPEC-001 → 006, 007 stretch).
@@ -114,7 +114,13 @@ feature file → **Gary's review** → implement → three consecutive green run
      own ack schema; newest-first snapshot ordering asserted deliberately (observed 240/240,
      undocumented — review Q1); new named `candleUpdateWaitMs = 45 s` (updates tick ~15 s —
      review Q2).
-6. **SPEC-006 — Negative paths & unsubscription** — PLANNED
+6. **SPEC-006 — Negative paths & unsubscription** ✅ COMPLETE 2026-07-05
+   - 4 scenarios (`@extended`). Live-vs-docs delta recorded: both unknown-symbol and
+     unknown-channel rejections return generic code 10300 + distinguishing msg (docs imply
+     10001/10302) — asserted code + msg substring per review Q1. Quiet pair selected =
+     `tZECBTC` (REST survey + 15.0 s heartbeats observed). Post-unsubscribe silence proven
+     deterministically via ping/pong sync barrier + buffer-index scan (no fixed waits).
+     `heartbeatWaitMs` 30→45 s (review Q3).
 7. **SPEC-007 — Sequencing** — STRETCH (revisit after SPEC-006)
 
 **Success Criteria:**
@@ -138,8 +144,8 @@ feature file → **Gary's review** → implement → three consecutive green run
 
 | Sprint | Priority | Items | Total Effort | Start | End |
 |---|---|---|---|---|---|
-| Done | HIGH | SPEC-002..005 | ~11 hrs actual | 2026-07-04 | 2026-07-05 |
-| Current | MEDIUM | SPEC-006 (final in-scope unit) | 3–4 hrs | TBD | TBD |
+| Done | HIGH | SPEC-002..006 (full in-scope roadmap) | ~13 hrs actual | 2026-07-04 | 2026-07-05 |
+| Next | LOW | SPEC-007 stretch decision; first session-notes handover | 1–4 hrs | TBD | TBD |
 
 ---
 

@@ -20,11 +20,12 @@ export const TIMEOUTS = {
   /** ADR-005: default bounded wait for a matching message. */
   messageWaitMs: 10_000,
   /**
-   * Heartbeats arrive roughly every 15 s on quiet channels (verified against
-   * live docs 4 July 2026), so heartbeat scenarios get their own constant
-   * (spec Section 11, confirmation 1).
+   * Heartbeats arrive every 15 s on idle channels (docs, confirmed live
+   * 5 July 2026: gaps of exactly 15.0 s on tZECBTC). Two heartbeats at that
+   * cadence can take ~30 s, so 30 s left zero margin — raised to 45 s
+   * (SPEC-006 review Q3, approved).
    */
-  heartbeatWaitMs: 30_000,
+  heartbeatWaitMs: 45_000,
   /**
    * Channel data pushes are event-driven and throttled: live probing
    * (5 July 2026) showed ticker updates on tBTCUSD arriving 5-8 s apart,
@@ -48,11 +49,18 @@ export const SYMBOLS = {
   /** Second parameterised pair for SPEC-004 outlines. */
   secondary: 'tETHUSD',
   /**
-   * Quiet pair for heartbeat scenarios: selected empirically when first
-   * needed (SPEC-002+), against the documented criterion — typically minutes
-   * between trades, checked via public REST 24h-volume data.
+   * Quiet pair for heartbeat scenarios, selected empirically 5 July 2026
+   * (SPEC-006 review Q2, approved): lowest 24 h quote volume in the REST
+   * tickers survey (0.05 ZEC traded all day) while still listed and
+   * subscribable; heartbeats observed live at exactly 15.0 s intervals.
    */
-  quiet: null,
+  quiet: 'tZECBTC',
+} as const;
+
+/** Deliberately invalid subscription inputs for the SPEC-006 negative paths. */
+export const NEGATIVE = {
+  unknownSymbol: 'tFAKEPAIRXYZ',
+  unknownChannel: 'bogus-channel',
 } as const;
 
 /**
