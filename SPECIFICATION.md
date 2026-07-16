@@ -267,7 +267,7 @@ Each unit below is an independent SDD work package. **Definition of Done for eve
 
 **Behaviour:** Subscribing to the book (parameterised precision/frequency/length via Scenario Outline) yields an ack echoing the parameters, a snapshot, and updates. With checksums enabled via `conf`, periodically received `cs` frames match a locally recomputed checksum over the maintained book state.
 **This is the flagship unit** — local book-state maintenance plus checksum recomputation is the strongest technical demonstration in the project. The implementer must follow the checksum algorithm from the Bitfinex documentation and must document it in `docs/`.
-**Invariants:** best bid < best ask after snapshot application; book depth never exceeds subscribed length.
+**Invariants:** best bid < best ask after snapshot application; book depth never exceeds subscribed length (steady-state contract; the maintained-replica implementation tolerates a documented one-frame transient overshoot — see `docs/adr/ADR-006-book-depth-transient-overshoot-margin.md`).
 
 ### SPEC-005 — Candles channel
 
