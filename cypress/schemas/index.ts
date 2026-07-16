@@ -21,6 +21,7 @@ export {
   type CandleFields,
   type SubscribedCandlesAck,
 } from './candlesChannel';
+export { isConfEvent, type ConfEvent } from './confEvent';
 export { isSubscriptionErrorEvent, type SubscriptionErrorEvent } from './errorEvent';
 export { isPlatformInfoEvent, type PlatformInfoEvent } from './infoEvent';
 export { isPongEvent, type PongEvent } from './pongEvent';
