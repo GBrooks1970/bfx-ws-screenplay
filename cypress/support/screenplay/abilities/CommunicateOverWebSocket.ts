@@ -19,6 +19,7 @@ import type {
   PollOptions,
   PollResult,
   PredicateSpec,
+  SendResult,
   SessionsResult,
 } from '../../../../node-driver/protocol';
 
@@ -60,12 +61,37 @@ export class CommunicateOverWebSocket extends Ability {
       });
   }
 
+  /**
+   * Sends over the driver's bridge. A closed/closing socket fails *here*,
+   * at the send, rather than as a misleading poll timeout later: the
+   * buffer is rescanned for platform blocking codes (same pattern as
+   * `messagesWhere`'s timeout handling) so a platform-reported outage
+   * surfaces as environment-blocked, and anything else surfaces as a
+   * distinguishable configuration error (review Risk #3 / backlog Risk #4).
+   */
   send(payload: JsonValue): Cypress.Chainable<OkResult> {
-    return cy.task<OkResult>(
-      'ws:send',
-      { connectionId: this.requireConnectionId(), payload },
-      { log: false },
-    );
+    const connectionId = this.requireConnectionId();
+    return cy.task<SendResult>('ws:send', { connectionId, payload }, { log: false }).then((result) => {
+      if (result.ok) {
+        return cy.wrap<OkResult>(result, { log: false });
+      }
+      return cy
+        .task<PollResult>(
+          'ws:poll',
+          { connectionId, predicateSpec: ENVIRONMENT_BLOCKED, options: { timeoutMs: 0 } },
+          { log: false },
+        )
+        .then((blocked): OkResult => {
+          if (blocked.frames.length > 0) {
+            throw new EnvironmentBlockedError(
+              'the platform reported a blocking status before the send could reach an open socket',
+            );
+          }
+          throw new ConfigurationError(
+            `Cannot send: connection '${connectionId}' is not open (socket-not-open)`,
+          );
+        });
+    });
   }
 
   /**
