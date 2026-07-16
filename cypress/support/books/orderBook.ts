@@ -7,7 +7,9 @@
  *
  * Checksum recipe (proven live, 8/8): top 25 bids (price desc) and top 25
  * asks (price asc), interleaved per index bid,ask,bid,ask..., each level as
- * `String(price):String(amount)`, joined with ':', CRC-32, signed 32-bit.
+ * `wireNumber(price):wireNumber(amount)`, joined with ':', CRC-32, signed
+ * 32-bit. `wireNumber` guards against `String()`'s exponent-notation
+ * fallback for very small/large magnitudes — see its own doc comment.
  */
 import {
   LEVEL_AMOUNT_INDEX,
@@ -16,6 +18,17 @@ import {
   type BookLevel,
 } from '../../schemas';
 import { crc32Signed } from './crc32';
+
+/**
+ * Thrown when a price/amount cannot be serialised into the checksum wire
+ * string without falling back to exponent notation (see `wireNumber`).
+ */
+export class ChecksumSerializationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ChecksumSerializationError';
+  }
+}
 
 export type BookSideEntry = { price: number; count: number; amount: number };
 
@@ -58,6 +71,29 @@ export function sortedSides(book: MaintainedBook): {
   };
 }
 
+/**
+ * Serialises a single price/amount for the checksum wire string exactly as
+ * the platform expects: a plain decimal token, never exponent notation.
+ *
+ * `String(number)` silently switches to exponent notation outside roughly
+ * `1e-6 <= |n| < 1e21` (e.g. `String(1e-7) === '1e-7'`). Feeding that token
+ * into the checksum input would diverge from Bitfinex's own serialisation
+ * and produce a false CRC mismatch — a rare, hard-to-reproduce flake in the
+ * project's flagship assertion rather than a loud, diagnosable failure.
+ * Guarding here turns that latent gap into a named, explained error instead.
+ */
+export function wireNumber(value: number): string {
+  const token = String(value);
+  if (token.includes('e') || token.includes('E')) {
+    throw new ChecksumSerializationError(
+      `checksum serialisation gap: ${value} stringifies to exponent notation ('${token}'), which ` +
+        'would diverge from the Bitfinex checksum wire format; extend wireNumber() to handle this ' +
+        'magnitude before trusting the checksum assertion for it',
+    );
+  }
+  return token;
+}
+
 export function checksumString(book: MaintainedBook): string {
   const { bids, asks } = sortedSides(book);
   const parts: string[] = [];
@@ -65,10 +101,10 @@ export function checksumString(book: MaintainedBook): string {
     const bid = bids[i];
     const ask = asks[i];
     if (bid) {
-      parts.push(String(bid.price), String(bid.amount));
+      parts.push(wireNumber(bid.price), wireNumber(bid.amount));
     }
     if (ask) {
-      parts.push(String(ask.price), String(ask.amount));
+      parts.push(wireNumber(ask.price), wireNumber(ask.amount));
     }
   }
   return parts.join(':');

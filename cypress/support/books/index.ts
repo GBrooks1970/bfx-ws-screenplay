@@ -3,9 +3,11 @@ export {
   applyLevel,
   bookChecksum,
   checksumString,
+  ChecksumSerializationError,
   emptyBook,
   foldBook,
   sortedSides,
+  wireNumber,
   type BookSideEntry,
   type MaintainedBook,
 } from './orderBook';
