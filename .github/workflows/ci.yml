@@ -1,5 +1,8 @@
 name: ci
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: [main]
@@ -20,6 +23,13 @@ jobs:
   smoke:
     if: github.event_name != 'schedule' && (github.event_name != 'workflow_dispatch' || inputs.suite == 'smoke')
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Push-triggered job (live-API etiquette, spec Section 9): a second push
+    # before the first run finishes cancels the stale run rather than
+    # racing two live-API suites in parallel.
+    concurrency:
+      group: ci-smoke-${{ github.ref }}
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -40,6 +50,7 @@ jobs:
     # Nightly, or dispatched on demand — used for each @extended unit's DoD runs.
     if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.suite == 'extended')
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
