@@ -14,8 +14,10 @@ export {
   CANDLE_MTS_INDEX,
   CANDLE_OPEN_INDEX,
   CANDLE_VOLUME_INDEX,
+  candlesRespectOhlcInvariants,
   isCandleFields,
   isSubscribedCandlesAck,
+  ohlcInvariantsHold,
   type CandleFields,
   type SubscribedCandlesAck,
 } from './candlesChannel';

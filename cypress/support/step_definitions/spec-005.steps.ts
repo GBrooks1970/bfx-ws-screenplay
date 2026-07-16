@@ -8,31 +8,14 @@ import {
 } from '../screenplay/questions';
 import { SubscribeToCandles } from '../screenplay/tasks';
 import {
-  CANDLE_CLOSE_INDEX,
-  CANDLE_HIGH_INDEX,
-  CANDLE_LOW_INDEX,
+  candlesRespectOhlcInvariants,
   CANDLE_MTS_INDEX,
-  CANDLE_OPEN_INDEX,
-  CANDLE_VOLUME_INDEX,
   type CandleFields,
 } from '../../schemas';
 import { theActor } from './hooks';
 
 // Layer 2 — glue only (ADR-003): every step delegates to Tasks and Questions.
-
-const ohlcInvariantsHold = (candle: CandleFields): boolean => {
-  const open = candle[CANDLE_OPEN_INDEX];
-  const close = candle[CANDLE_CLOSE_INDEX];
-  const high = candle[CANDLE_HIGH_INDEX];
-  const low = candle[CANDLE_LOW_INDEX];
-  return (
-    low <= open &&
-    open <= high &&
-    low <= close &&
-    close <= high &&
-    candle[CANDLE_VOLUME_INDEX] >= 0
-  );
-};
+// OHLC invariants live in ../../schemas/candlesChannel.ts (review Risk #4 / backlog Risk #5).
 
 When('she subscribes to one-minute candles for the primary symbol', () =>
   theActor().attemptsTo(SubscribeToCandles.oneMinuteForThePrimarySymbol()),
@@ -63,12 +46,7 @@ Then('she receives a candles snapshot of schema-valid candles', () =>
 
 Then('every candle in the snapshot respects the OHLC invariants', () =>
   theActor().attemptsTo(
-    Ensure.that(
-      TheChannelSnapshot.ofCandles(),
-      satisfies('respect low <= open,close <= high and volume >= 0 in every candle', (candles) =>
-        candles.every(ohlcInvariantsHold),
-      ),
-    ),
+    Ensure.that(TheChannelSnapshot.ofCandles(), candlesRespectOhlcInvariants()),
   ),
 );
 
@@ -99,11 +77,6 @@ Then('she receives at least {int} candle update matching the candle schema', (co
 
 Then('every received candle update respects the OHLC invariants', () =>
   theActor().attemptsTo(
-    Ensure.that(
-      ReceivedUpdates.candles(1),
-      satisfies('respect low <= open,close <= high and volume >= 0 in every update', (updates) =>
-        updates.every(ohlcInvariantsHold),
-      ),
-    ),
+    Ensure.that(ReceivedUpdates.candles(1), candlesRespectOhlcInvariants('update')),
   ),
 );

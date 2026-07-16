@@ -1,6 +1,6 @@
 import { Given, Then, When } from '@badeball/cypress-cucumber-preprocessor';
 import { BOOK_SETTINGS } from '../config';
-import { sortedSides, type MaintainedBook } from '../books';
+import { bookSidesArePureAndOrdered, sidesPureAndOrdered, sortedSides } from '../books';
 import { Ensure, satisfies } from '../screenplay/core';
 import {
   ChecksumVerifications,
@@ -17,25 +17,7 @@ import {
 import { theActor } from './hooks';
 
 // Layer 2 — glue only (ADR-003): every step delegates to Tasks and Questions.
-
-const strictlyDescending = (values: number[]): boolean =>
-  values.every((value, i) => i === 0 || (values[i - 1] as number) > value);
-
-const strictlyAscending = (values: number[]): boolean =>
-  values.every((value, i) => i === 0 || (values[i - 1] as number) < value);
-
-const sidesPureAndOrdered = (book: MaintainedBook): boolean => {
-  const { bids, asks } = sortedSides(book);
-  const sizeOk = (side: unknown[]): boolean => side.length >= 1 && side.length <= 30;
-  return (
-    sizeOk(bids) &&
-    sizeOk(asks) &&
-    bids.every((level) => level.amount > 0) &&
-    asks.every((level) => level.amount < 0) &&
-    strictlyDescending(bids.map((level) => level.price)) &&
-    strictlyAscending(asks.map((level) => level.price))
-  );
-};
+// Book purity/ordering invariants live in ../books/invariants.ts (review Risk #4 / backlog Risk #5).
 
 Given('she has enabled checksum frames for this connection', () =>
   theActor().attemptsTo(EnableChecksumFrames.forThisConnection()),
@@ -119,12 +101,7 @@ Then('the maintained book has only positive prices and counts', () =>
 );
 
 Then('each side of the maintained book is pure and correctly ordered', () =>
-  theActor().attemptsTo(
-    Ensure.that(
-      TheMaintainedBook.now(),
-      satisfies('have pure, correctly ordered sides of plausible size', sidesPureAndOrdered),
-    ),
-  ),
+  theActor().attemptsTo(Ensure.that(TheMaintainedBook.now(), bookSidesArePureAndOrdered)),
 );
 
 Then('{int} consecutive checksum frames each match her locally maintained book', (count: number) =>

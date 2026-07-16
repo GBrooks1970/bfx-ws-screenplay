@@ -10,7 +10,12 @@
  * The ack carries only { chanId, key } — no symbol/pair fields (they are
  * encoded in the key, e.g. "trade:1m:tBTCUSD"), so candles cannot reuse the
  * shared trading-pair ack schema.
+ *
+ * OHLC invariants live here, beside the schema they check (relocated out of
+ * the step-definition glue layer — ADR-003; review Risk #4 / backlog
+ * Risk #5), exported as a named `Expectation` for `Ensure.that`.
  */
+import { Expectation, satisfies } from '../support/screenplay/core';
 
 export type CandleFields = readonly [
   number, // MTS — millisecond timestamp, aligned to the timeframe
@@ -58,3 +63,29 @@ export function isSubscribedCandlesAck(frame: unknown): frame is SubscribedCandl
     typeof candidate.key === 'string'
   );
 }
+
+/** low <= open,close <= high, and non-negative volume, for a single candle. */
+export function ohlcInvariantsHold(candle: CandleFields): boolean {
+  const open = candle[CANDLE_OPEN_INDEX];
+  const close = candle[CANDLE_CLOSE_INDEX];
+  const high = candle[CANDLE_HIGH_INDEX];
+  const low = candle[CANDLE_LOW_INDEX];
+  return (
+    low <= open &&
+    open <= high &&
+    low <= close &&
+    close <= high &&
+    candle[CANDLE_VOLUME_INDEX] >= 0
+  );
+}
+
+/**
+ * Named Expectation over an array of candles (a snapshot or a set of
+ * updates) — `subject` only changes the failure-message noun.
+ */
+export const candlesRespectOhlcInvariants = (
+  subject: string = 'candle',
+): Expectation<readonly CandleFields[]> =>
+  satisfies(`respect low <= open,close <= high and volume >= 0 in every ${subject}`, (candles) =>
+    candles.every(ohlcInvariantsHold),
+  );

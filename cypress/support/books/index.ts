@@ -11,3 +11,9 @@ export {
   type BookSideEntry,
   type MaintainedBook,
 } from './orderBook';
+export {
+  bookSidesArePureAndOrdered,
+  sidesPureAndOrdered,
+  strictlyAscending,
+  strictlyDescending,
+} from './invariants';
