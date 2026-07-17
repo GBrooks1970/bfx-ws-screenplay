@@ -6,7 +6,7 @@
  * `Ensure.that`.
  */
 import { Expectation, satisfies } from '../screenplay/core';
-import { sortedSides, type BookSideEntry, type MaintainedBook } from './orderBook';
+import type { BookSideEntry, SortedBookSides } from './orderBook';
 
 /** ADR-006's transient-overshoot margin: 25 subscribed / 30 allowed. */
 const MAX_SIDE_SIZE = 30;
@@ -17,8 +17,12 @@ export const strictlyDescending = (values: number[]): boolean =>
 export const strictlyAscending = (values: number[]): boolean =>
   values.every((value, i) => i === 0 || (values[i - 1] as number) < value);
 
-export const sidesPureAndOrdered = (book: MaintainedBook): boolean => {
-  const { bids, asks } = sortedSides(book);
+/**
+ * Takes already-sorted sides (`sortedSides()`'s output — the book Questions
+ * answer this serialisable projection, not the raw `Map`-based book) so a
+ * failed diagnostic can print the actual levels instead of `{}`.
+ */
+export const sidesPureAndOrdered = ({ bids, asks }: SortedBookSides): boolean => {
   const sizeOk = (side: readonly BookSideEntry[]): boolean =>
     side.length >= 1 && side.length <= MAX_SIDE_SIZE;
   return (
@@ -31,7 +35,7 @@ export const sidesPureAndOrdered = (book: MaintainedBook): boolean => {
   );
 };
 
-export const bookSidesArePureAndOrdered: Expectation<MaintainedBook> = satisfies(
+export const bookSidesArePureAndOrdered: Expectation<SortedBookSides> = satisfies(
   'have pure, correctly ordered sides of plausible size',
   sidesPureAndOrdered,
 );

@@ -1,5 +1,5 @@
 import { CommunicateOverWebSocket } from '../abilities/CommunicateOverWebSocket';
-import { foldBook, type MaintainedBook } from '../../books';
+import { foldBook, sortedSides, type SortedBookSides } from '../../books';
 import { CANDLES } from '../../config';
 import {
   isBookLevel,
@@ -38,8 +38,12 @@ export class TheChannelSnapshot {
         });
     });
   }
-  /** The snapshot alone, folded into a book — atomic, so side invariants cannot race. */
-  static ofTheBook(): Question<MaintainedBook> {
+  /**
+   * The snapshot alone, folded into a book — atomic, so side invariants
+   * cannot race. Answers the serialisable `sortedSides()` projection, not
+   * the raw `Map`-based book (review Risk #7 / backlog Risk #8).
+   */
+  static ofTheBook(): Question<SortedBookSides> {
     return Question.about('the book snapshot', (actor) => {
       const chanId = actor.recalled<number>('book:chanId');
       return CommunicateOverWebSocket.as(actor)
@@ -47,7 +51,7 @@ export class TheChannelSnapshot {
           { kind: 'channel', chanId, frameType: 'data' },
           { description: 'the book snapshot' },
         )
-        .then((frames): MaintainedBook => {
+        .then((frames): SortedBookSides => {
           const first = frames[0];
           const payload = Array.isArray(first?.frame) ? (first.frame as unknown[])[1] : undefined;
           if (!Array.isArray(payload)) {
@@ -59,7 +63,7 @@ export class TheChannelSnapshot {
             }
             return level;
           });
-          return foldBook(levels, []);
+          return sortedSides(foldBook(levels, []));
         });
     });
   }

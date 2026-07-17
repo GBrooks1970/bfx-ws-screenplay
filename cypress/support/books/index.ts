@@ -10,6 +10,7 @@ export {
   wireNumber,
   type BookSideEntry,
   type MaintainedBook,
+  type SortedBookSides,
 } from './orderBook';
 export {
   bookSidesArePureAndOrdered,

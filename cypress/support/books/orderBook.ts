@@ -60,11 +60,15 @@ export function foldBook(snapshot: readonly BookLevel[], updates: readonly BookL
   return book;
 }
 
-/** Bids price-descending, asks price-ascending — the checksum ordering. */
-export function sortedSides(book: MaintainedBook): {
-  bids: BookSideEntry[];
-  asks: BookSideEntry[];
-} {
+/**
+ * A serialisable projection of a book's sides — plain arrays, not `Map`s
+ * (review Risk #7 / backlog Risk #8: a `MaintainedBook` stringifies to
+ * `{"bids":{},"asks":{}}`, hiding the state a failed diagnostic needs).
+ * Bids price-descending, asks price-ascending — the checksum ordering.
+ */
+export type SortedBookSides = { bids: BookSideEntry[]; asks: BookSideEntry[] };
+
+export function sortedSides(book: MaintainedBook): SortedBookSides {
   return {
     bids: [...book.bids.values()].sort((a, b) => b.price - a.price),
     asks: [...book.asks.values()].sort((a, b) => a.price - b.price),

@@ -1,6 +1,6 @@
 import { Given, Then, When } from '@badeball/cypress-cucumber-preprocessor';
 import { BOOK_SETTINGS } from '../config';
-import { bookSidesArePureAndOrdered, sidesPureAndOrdered, sortedSides } from '../books';
+import { bookSidesArePureAndOrdered, sidesPureAndOrdered } from '../books';
 import { Ensure, satisfies } from '../screenplay/core';
 import {
   ChecksumVerifications,
@@ -62,7 +62,7 @@ Then('she receives a book snapshot of schema-valid price levels', () =>
       TheChannelSnapshot.ofTheBook(),
       satisfies(
         'contain at least one level per side',
-        (book) => book.bids.size >= 1 && book.asks.size >= 1,
+        (sides) => sides.bids.length >= 1 && sides.asks.length >= 1,
       ),
     ),
   ),
@@ -72,15 +72,14 @@ Then('the snapshot has bids below asks, each side correctly ordered', () =>
   theActor().attemptsTo(
     Ensure.that(
       TheChannelSnapshot.ofTheBook(),
-      satisfies('have best bid below best ask, sides ordered', (book) => {
-        const { bids, asks } = sortedSides(book);
-        const bestBid = bids[0];
-        const bestAsk = asks[0];
+      satisfies('have best bid below best ask, sides ordered', (sides) => {
+        const bestBid = sides.bids[0];
+        const bestAsk = sides.asks[0];
         return (
           bestBid !== undefined &&
           bestAsk !== undefined &&
           bestBid.price < bestAsk.price &&
-          sidesPureAndOrdered(book)
+          sidesPureAndOrdered(sides)
         );
       }),
     ),
@@ -91,10 +90,8 @@ Then('the maintained book has only positive prices and counts', () =>
   theActor().attemptsTo(
     Ensure.that(
       TheMaintainedBook.now(),
-      satisfies('have only positive prices and counts', (book) =>
-        [...book.bids.values(), ...book.asks.values()].every(
-          (level) => level.price > 0 && level.count >= 1,
-        ),
+      satisfies('have only positive prices and counts', (sides) =>
+        [...sides.bids, ...sides.asks].every((level) => level.price > 0 && level.count >= 1),
       ),
     ),
   ),
