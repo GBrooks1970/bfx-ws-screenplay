@@ -7,6 +7,7 @@ import type {
   PollOptions,
   PollResult,
   PredicateSpec,
+  SendResult,
 } from './protocol';
 
 /**
@@ -128,8 +129,14 @@ function requireSession(connectionId: string): Session {
   return session;
 }
 
-export function send(connectionId: string, payload: unknown): { ok: boolean } {
+export function send(connectionId: string, payload: unknown): SendResult {
   const session = requireSession(connectionId);
+  // A mid-scenario disconnect (restart/maintenance) must fail here, at the
+  // send, rather than silently reporting success and dying later as a
+  // misleading poll timeout with no send-side cause.
+  if (session.socket.readyState !== WebSocket.OPEN) {
+    return { ok: false, reason: 'socket-not-open' };
+  }
   session.socket.send(JSON.stringify(payload));
   return { ok: true };
 }

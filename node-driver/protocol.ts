@@ -70,4 +70,11 @@ export type PollArgs = { connectionId: string; predicateSpec: PredicateSpec; opt
 export type CloseArgs = { connectionId: string };
 
 export type OkResult = { ok: boolean };
+/**
+ * `ws:send`'s result (bridge contract change, review Risk #3 / backlog
+ * Risk #4): distinguishes a genuine send from a socket that is no longer
+ * open, so a mid-scenario disconnect fails at the send with a named reason
+ * instead of surfacing later as a misleading poll timeout.
+ */
+export type SendResult = { ok: true } | { ok: false; reason: 'socket-not-open' };
 export type SessionsResult = { connectionIds: string[] };

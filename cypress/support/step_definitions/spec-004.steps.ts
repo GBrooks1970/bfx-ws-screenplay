@@ -1,6 +1,6 @@
 import { Given, Then, When } from '@badeball/cypress-cucumber-preprocessor';
 import { BOOK_SETTINGS } from '../config';
-import { sortedSides, type MaintainedBook } from '../books';
+import { bookSidesArePureAndOrdered, sidesPureAndOrdered } from '../books';
 import { Ensure, satisfies } from '../screenplay/core';
 import {
   ChecksumVerifications,
@@ -17,25 +17,7 @@ import {
 import { theActor } from './hooks';
 
 // Layer 2 — glue only (ADR-003): every step delegates to Tasks and Questions.
-
-const strictlyDescending = (values: number[]): boolean =>
-  values.every((value, i) => i === 0 || (values[i - 1] as number) > value);
-
-const strictlyAscending = (values: number[]): boolean =>
-  values.every((value, i) => i === 0 || (values[i - 1] as number) < value);
-
-const sidesPureAndOrdered = (book: MaintainedBook): boolean => {
-  const { bids, asks } = sortedSides(book);
-  const sizeOk = (side: unknown[]): boolean => side.length >= 1 && side.length <= 30;
-  return (
-    sizeOk(bids) &&
-    sizeOk(asks) &&
-    bids.every((level) => level.amount > 0) &&
-    asks.every((level) => level.amount < 0) &&
-    strictlyDescending(bids.map((level) => level.price)) &&
-    strictlyAscending(asks.map((level) => level.price))
-  );
-};
+// Book purity/ordering invariants live in ../books/invariants.ts (review Risk #4 / backlog Risk #5).
 
 Given('she has enabled checksum frames for this connection', () =>
   theActor().attemptsTo(EnableChecksumFrames.forThisConnection()),
@@ -80,7 +62,7 @@ Then('she receives a book snapshot of schema-valid price levels', () =>
       TheChannelSnapshot.ofTheBook(),
       satisfies(
         'contain at least one level per side',
-        (book) => book.bids.size >= 1 && book.asks.size >= 1,
+        (sides) => sides.bids.length >= 1 && sides.asks.length >= 1,
       ),
     ),
   ),
@@ -90,15 +72,14 @@ Then('the snapshot has bids below asks, each side correctly ordered', () =>
   theActor().attemptsTo(
     Ensure.that(
       TheChannelSnapshot.ofTheBook(),
-      satisfies('have best bid below best ask, sides ordered', (book) => {
-        const { bids, asks } = sortedSides(book);
-        const bestBid = bids[0];
-        const bestAsk = asks[0];
+      satisfies('have best bid below best ask, sides ordered', (sides) => {
+        const bestBid = sides.bids[0];
+        const bestAsk = sides.asks[0];
         return (
           bestBid !== undefined &&
           bestAsk !== undefined &&
           bestBid.price < bestAsk.price &&
-          sidesPureAndOrdered(book)
+          sidesPureAndOrdered(sides)
         );
       }),
     ),
@@ -109,22 +90,15 @@ Then('the maintained book has only positive prices and counts', () =>
   theActor().attemptsTo(
     Ensure.that(
       TheMaintainedBook.now(),
-      satisfies('have only positive prices and counts', (book) =>
-        [...book.bids.values(), ...book.asks.values()].every(
-          (level) => level.price > 0 && level.count >= 1,
-        ),
+      satisfies('have only positive prices and counts', (sides) =>
+        [...sides.bids, ...sides.asks].every((level) => level.price > 0 && level.count >= 1),
       ),
     ),
   ),
 );
 
 Then('each side of the maintained book is pure and correctly ordered', () =>
-  theActor().attemptsTo(
-    Ensure.that(
-      TheMaintainedBook.now(),
-      satisfies('have pure, correctly ordered sides of plausible size', sidesPureAndOrdered),
-    ),
-  ),
+  theActor().attemptsTo(Ensure.that(TheMaintainedBook.now(), bookSidesArePureAndOrdered)),
 );
 
 Then('{int} consecutive checksum frames each match her locally maintained book', (count: number) =>

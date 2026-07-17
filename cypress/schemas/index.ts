@@ -14,11 +14,14 @@ export {
   CANDLE_MTS_INDEX,
   CANDLE_OPEN_INDEX,
   CANDLE_VOLUME_INDEX,
+  candlesRespectOhlcInvariants,
   isCandleFields,
   isSubscribedCandlesAck,
+  ohlcInvariantsHold,
   type CandleFields,
   type SubscribedCandlesAck,
 } from './candlesChannel';
+export { isConfEvent, type ConfEvent } from './confEvent';
 export { isSubscriptionErrorEvent, type SubscriptionErrorEvent } from './errorEvent';
 export { isPlatformInfoEvent, type PlatformInfoEvent } from './infoEvent';
 export { isPongEvent, type PongEvent } from './pongEvent';

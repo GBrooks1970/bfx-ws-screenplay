@@ -54,6 +54,7 @@ buffer); layer 4 translates.
 | [ADR-003](docs/adr/ADR-003-cucumber-preprocessor.md) | `@badeball/cypress-cucumber-preprocessor`; step definitions delegate only |
 | [ADR-004](docs/adr/ADR-004-assertion-strategy-live-data.md) | Protocol/schema/invariant assertions only — market-value equality prohibited |
 | [ADR-005](docs/adr/ADR-005-time-and-flake-policy.md) | Bounded condition-waits with named timeout constants; no fixed sleeps; distinct environment-blocked outcome |
+| [ADR-006](docs/adr/ADR-006-book-depth-transient-overshoot-margin.md) | Book-depth purity check allows a documented one-frame transient overshoot (25 subscribed / 30 allowed) |
 
 ## Specification progress
 

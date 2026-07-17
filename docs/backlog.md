@@ -8,11 +8,13 @@
 
 # bfx-ws-screenplay — Backlog
 
-**Version:** 6 — code review v1 findings triaged in
-**Last Updated:** 2026-07-06
+**Version:** 7 — code review v1 findings (Risks #2–#8) resolved via WORKLIST_bfx-ws-screenplay.md
+**Last Updated:** 2026-07-17
 **Based on:** `SPECIFICATION.md` (normative design spec), the SPEC-001..006 review packs (approved
 4–5 July 2026), and code review v1 (`.review/CODE_REVIEW_CLAUDE_Fable_5_v1_20260706T1039Z/`,
-2026-07-06 — no HIGH findings)
+2026-07-06 — no HIGH findings), remediated by BFX-01..07 on
+[PR #9](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/9) (open, not yet merged as of
+2026-07-17)
 
 This backlog tracks the SPEC-unit roadmap and any risks against it; ordering follows the
 specification's mandatory implementation order (SPEC-001 → 006, 007 stretch).
@@ -33,135 +35,12 @@ None.
 
 ### MEDIUM Priority (Score: 10–19)
 
-All three are code-review-v1 findings; none is HIGH and all three gates passed live during the
-review. See `.review/CODE_REVIEW_CLAUDE_Fable_5_v1_20260706T1039Z/02_RISKS_AND_ISSUES.md`.
-
-#### Risk #2 (review #1): Checksum string can diverge from the wire for exponent-notation magnitudes — Score: 11
-
-**Priority Score:** Security Impact (0) + Breakage Probability (7) + Maintenance Burden (4) = **11 points**
-**Impact:** `checksumString` uses bare `String(price)`/`String(amount)`; JS emits exponential
-notation (`'1e-7'`) below `1e-6`, so the flagship checksum would false-fail on a low-priced pair.
-Not triggered on tBTCUSD/P0 (never enters the exponent range), which is why it has not bitten.
-**Effort:** 1–2 hrs
-**Status:** READY TO START
-**Affected Stacks:** TypeScript/Cypress
-
-**Refactor Strategy:**
-Add a `wireNumber(n)` guard in `checksumString` that fails with a *named* error on exponent forms
-(diagnosable, not mysterious), OR record a dated ADR note scoping exponent-range magnitudes out of
-the P0/tBTCUSD configuration. Add a pure unit check over an exponent-range level (the book modules
-are already pure and test-ready).
-
-**Success Criteria:**
-- [ ] Exponent-range magnitude either handled or explicitly scoped out with a dated note; pure
-      unit check exists.
-
-#### Risk #3 (review #2): Book-depth invariant relaxed (25 → 30) without an ADR change note — Score: 10
-
-**Priority Score:** Security Impact (0) + Breakage Probability (2) + Maintenance Burden (8) = **10 points**
-**Impact:** `spec-004.steps.ts` bounds each side at `<= 30` while the subscription is `len: '25'`.
-The relaxation is defensible (transient overshoot between an over-depth insert and the platform's
-compensating removal), but the SDD agreement requires a written ADR change note *before* deviating
-code — none exists. Process-integrity gap in the flagship unit; the decision was made in the
-(out-of-repo) SPEC-004 review pack.
-**Effort:** 15 min
-**Status:** READY TO START
-**Affected Stacks:** TypeScript/Cypress
-
-**Refactor Strategy:**
-Add a dated change note (ADR-006 or a SPEC-004 addendum) recording the transient-overshoot
-rationale and the chosen margin, OR tighten to `len` and assert post-quiescence depth.
-
-**Success Criteria:**
-- [ ] Spec-vs-implementation delta on book depth is documented, or the check is tightened to `len`.
-
-#### Risk #4 (review #3): `ws:send` reports success unconditionally; no socket-state guard — Score: 11
-
-**Priority Score:** Security Impact (0) + Breakage Probability (5) + Maintenance Burden (6) = **11 points**
-**Impact:** `driver.ts` `send` returns `{ ok: true }` without checking `readyState`; a mid-scenario
-socket close (restart/maintenance — the situation the suite is careful about) is swallowed, so the
-scenario dies later in a poll timeout that points at the wrong cause. Misleading diagnostics in the
-exact failure mode the project treats as first-class.
-**Effort:** 1 hr
-**Status:** READY TO START
-**Affected Stacks:** TypeScript/Cypress (driver + bridge contract)
-
-**Refactor Strategy:**
-Check `session.socket.readyState === WebSocket.OPEN`; return `{ ok: false, reason: 'socket-not-open' }`
-(extend the bridge contract type in `protocol.ts`, note it in the `predicate-dsl.md` change log if
-treated as a contract change) and have the ability raise the appropriate error. Optionally buffer a
-synthetic `connection-closed` marker on `'close'`.
-
-**Success Criteria:**
-- [ ] `send` guards socket state and surfaces a distinct, diagnosable failure.
+None. Risks #2–#4 (code review v1) resolved 2026-07-17 — see Resolved Risks below.
 
 ### LOW Priority (Score: 0–9)
 
-#### Risk #5 (review #4): Non-trivial invariant logic accumulating in the step-definition layer — Score: 6
-
-**Priority Score:** Security Impact (0) + Breakage Probability (2) + Maintenance Burden (4) = **6 points**
-**Impact:** ADR-003 says steps are "glue only". SPEC-004's steps hold ~24 lines of book semantics
-(`strictlyDescending`/`strictlyAscending`/`sidesPureAndOrdered`); milder cases in SPEC-002/003/005
-steps. Correct and readable, but unreachable for reuse and normalises logic in the glue layer.
-**Effort:** 1–2 hrs
-**Status:** READY TO START
-
-**Refactor Strategy:**
-Move book-side invariants into a pure `cypress/support/books/invariants.ts` (and OHLC invariants
-next to the candle schema); export as named `Expectation`s via `satisfies` so steps become pure
-delegation again — and become unit-testable.
-
-**Success Criteria:**
-- [ ] Domain invariants live in pure modules; steps delegate only.
-
-#### Risk #6 (review #5): CI workflow lacks `timeout-minutes`, `concurrency`, and `permissions` — Score: 5
-
-**Priority Score:** Security Impact (2) + Breakage Probability (1) + Maintenance Burden (2) = **5 points**
-**Impact:** Both `ci.yml` jobs run against a live external service with no job timeout (a wedged run
-holds a runner for GitHub's 6-hour default), no concurrency grouping (rapid pushes run parallel
-live-API suites, against the repo's own etiquette), and default token scope.
-**Effort:** 15 min
-**Status:** READY TO START
-
-**Refactor Strategy:**
-Add `timeout-minutes` (15 smoke / 30 extended), `concurrency: { group: ci-${{ github.ref }},
-cancel-in-progress: true }` on the push-triggered job, and `permissions: { contents: read }` at
-workflow level.
-
-**Success Criteria:**
-- [ ] CI has job timeouts, concurrency grouping, and least-privilege token permissions.
-
-#### Risk #7 (review #6): `conf` acknowledgement validated inline, bypassing the schema catalogue — Score: 4
-
-**Priority Score:** Security Impact (0) + Breakage Probability (1) + Maintenance Burden (3) = **4 points**
-**Impact:** Spec §7.2 mandates assertions reference schemas. `EnableChecksumFrames` validates the
-`conf` ack with an inline cast + field check instead of a type guard. Minor consistency gap;
-compounds if SPEC-007 (which reuses `conf`) lands.
-**Effort:** 15 min
-**Status:** READY TO START
-
-**Refactor Strategy:**
-Add `cypress/schemas/confEvent.ts` (`{ event: 'conf', status: string, flags?: number }` with the
-usual docs-verification header) and use it in the task.
-
-**Success Criteria:**
-- [ ] `conf` ack validated via a schema guard like every other event type.
-
-#### Risk #8 (review #7): Assertion failure messages stringify `Map`-based books to `{}` — Score: 4
-
-**Priority Score:** Security Impact (0) + Breakage Probability (0) + Maintenance Burden (4) = **4 points**
-**Impact:** `Expectation.verify` reports `... but got ${JSON.stringify(actual)}`; a `MaintainedBook`
-holds `Map`s, which stringify to `{}` — a failed book invariant prints `{"bids":{},"asks":{}}`,
-hiding the state the engineer needs. Diagnostics only, but it lands on the flagship unit's failures.
-**Effort:** 30 min
-**Status:** READY TO START
-
-**Refactor Strategy:**
-Either give `Expectation.verify` a pluggable renderer, or have the book questions answer a
-serialisable projection (`sortedSides` output — plain arrays) instead of the raw `Map`.
-
-**Success Criteria:**
-- [ ] Book invariant failures print the actual book state.
+Risks #5–#8 (code review v1) resolved 2026-07-17 — see Resolved Risks below. One LOW item remains
+open (unrelated recurring-maintenance item, not a review finding):
 
 #### Risk #1: Pinned-trio drift (Cypress / cucumber-preprocessor / esbuild-preprocessor) — Score: 5
 
@@ -186,6 +65,58 @@ trio together, re-run all gates plus one live `@extended` run.
 
 ### Resolved Risks
 
+#### Risk #2 (review #1): Checksum string can diverge from the wire for exponent-notation magnitudes ✅ Resolved 2026-07-17
+
+**Resolution:** `wireNumber()` guard added in `orderBook.ts`; `checksumString` routed through it;
+throws a named `ChecksumSerializationError` on exponent-range magnitudes instead of silently
+diverging from the wire. Pure unit check (`scripts/check-checksum-serialization.ts`, 5/5) covers
+the exponent-range case (`1e-7`, `1e21`). Gates (typecheck/lint/test:smoke) green.
+**See:** commit `db3ed18`, BFX-01, PR #9 (open, not yet merged).
+
+#### Risk #3 (review #2): Book-depth invariant relaxed (25 → 30) without an ADR change note ✅ Resolved 2026-07-17
+
+**Resolution:** `docs/adr/ADR-006-book-depth-transient-overshoot-margin.md` added, documenting the
+transient-overshoot rationale and the `<= 30` margin; cross-referenced from `SPECIFICATION.md`
+SPEC-004.
+**See:** commit `07e356f`, BFX-02, PR #9 (open, not yet merged).
+
+#### Risk #4 (review #3): `ws:send` reports success unconditionally; no socket-state guard ✅ Resolved 2026-07-17
+
+**Resolution:** `driver.ts` `send()` now checks `readyState`; returns a new `SendResult` on a closed
+socket; the ability rescans for blocking codes and throws `EnvironmentBlockedError`/
+`ConfigurationError` as appropriate.
+**See:** commit `fbdd451`, BFX-03, PR #9 (open, not yet merged).
+
+#### Risk #5 (review #4): Non-trivial invariant logic accumulating in the step-definition layer ✅ Resolved 2026-07-17
+
+**Resolution:** Book-side invariants moved into `cypress/support/books/invariants.ts`; OHLC
+invariants (`candlesRespectOhlcInvariants`) moved beside the candle schema; steps return to pure
+delegation (ADR-003). Verified live via a targeted `@extended` run (SPEC-004/005, 7/7).
+**See:** commit `f668a16`, BFX-04, PR #9 (open, not yet merged).
+
+#### Risk #6 (review #5): CI workflow lacks `timeout-minutes`, `concurrency`, and `permissions` ✅ Resolved 2026-07-17
+
+**Resolution:** `ci.yml` gained workflow-level `permissions: contents: read`, `timeout-minutes`
+(15 smoke / 30 extended), and a `concurrency` group with `cancel-in-progress: true` on the
+push-triggered `smoke` job. CI run green.
+**See:** commit `ce52585`, BFX-05, PR #9 (open, not yet merged).
+
+#### Risk #7 (review #6): `conf` acknowledgement validated inline, bypassing the schema catalogue ✅ Resolved 2026-07-17
+
+**Resolution:** `cypress/schemas/confEvent.ts` added (`isConfEvent` guard, verified against live
+Bitfinex docs); `EnableChecksumFrames` now validates the ack via the guard. Verified live via a
+targeted `@extended` SPEC-004 run (4/4).
+**See:** commit `4777b54`, BFX-06, PR #9 (open, not yet merged).
+
+#### Risk #8 (review #7): Assertion failure messages stringify `Map`-based books to `{}` ✅ Resolved 2026-07-17
+
+**Resolution:** Book Questions (`TheChannelSnapshot.ofTheBook`, `TheMaintainedBook.now`) now answer
+the serialisable `sortedSides()` projection (plain arrays) instead of the raw `Map`-based
+`MaintainedBook`, so a failed invariant's diagnostic prints the actual price levels. Demonstrated by
+`scripts/check-book-diagnostics.ts` (2/2 checks: reproduces the historical `{}` defect, then proves
+the fix).
+**See:** commit `6099f91`, BFX-07, PR #9 (open, not yet merged).
+
 #### npm audit: mocha transitive vulnerabilities (1 high, 1 moderate, 1 low) ✅ Resolved 2026-07-04
 
 **Resolution:** `overrides` in `package.json` force patched `diff` (^8.0.3) and
@@ -200,10 +131,10 @@ consecutive green runs prove no breakage.
 | Priority | Count | Total Effort | Status Distribution |
 |---|---|---|---|
 | HIGH (20–30) | 0 | — | — |
-| MEDIUM (10–19) | 3 | ~2.5 hrs | all READY TO START (review v1) |
-| LOW (0–9) | 5 | ~3 hrs + recurring trio bump | all READY TO START |
-| **Total Outstanding** | **8** | ~5.5 hrs + recurring | |
-| Resolved | 1 | | |
+| MEDIUM (10–19) | 0 | — | — |
+| LOW (0–9) | 1 | ~1 hr per deliberate upgrade | READY TO START (recurring maintenance, unrelated to review v1) |
+| **Total Outstanding** | **1** | recurring | |
+| Resolved | 8 | | 7 via WORKLIST_bfx-ws-screenplay.md (PR #9, open) + 1 prior |
 
 ---
 
@@ -274,8 +205,8 @@ feature file → **Gary's review** → implement → three consecutive green run
 | Sprint | Priority | Items | Total Effort | Start | End |
 |---|---|---|---|---|---|
 | Done | HIGH | SPEC-002..006 (full in-scope roadmap) | ~13 hrs actual | 2026-07-04 | 2026-07-06 |
-| Next | MEDIUM | Review v1 findings: Risks #2, #3, #4 | ~2.5 hrs | TBD | TBD |
-| Later | LOW | Review v1 LOW findings (#5–#8); SPEC-007 stretch decision | ~3 hrs | TBD | TBD |
+| Done | MEDIUM+LOW | Review v1 findings: Risks #2–#8 (BFX-01..07, PR #9, open) | ~5.5 hrs | 2026-07-17 | 2026-07-17 |
+| Later | — | SPEC-007 stretch decision (still open); Risk #1 pinned-trio maintenance (recurring) | — | TBD | TBD |
 
 ---
 

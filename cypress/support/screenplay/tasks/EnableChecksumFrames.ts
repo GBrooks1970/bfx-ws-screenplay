@@ -1,5 +1,6 @@
 import { CommunicateOverWebSocket } from '../abilities/CommunicateOverWebSocket';
 import { CHECKSUM_CONF_FLAG } from '../../config';
+import { isConfEvent } from '../../../schemas';
 import { type Actor, AssertionError, Task } from '../core';
 
 /**
@@ -27,8 +28,8 @@ export class EnableChecksumFrames extends Task {
         ),
       )
       .then((frames) => {
-        const ack = frames[0]?.frame as Record<string, unknown> | undefined;
-        if (!ack || ack.status !== 'OK') {
+        const ack = frames[0]?.frame;
+        if (!isConfEvent(ack) || ack.status !== 'OK') {
           throw new AssertionError(
             `The conf request was not acknowledged with status OK: ${JSON.stringify(ack)}`,
           );
