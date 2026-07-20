@@ -8,12 +8,17 @@
 
 # bfx-ws-screenplay — Backlog
 
-**Version:** 8 — code review v1 findings (Risks #2–#8) resolved via WORKLIST_bfx-ws-screenplay.md
+**Version:** 9 — code review v1 (Risks #2–#8) and v2 (Risks #1–#6) findings resolved via
+WORKLIST_bfx-ws-screenplay.md
 **Last Updated:** 2026-07-20
 **Based on:** `SPECIFICATION.md` (normative design spec), the SPEC-001..006 review packs (approved
-4–5 July 2026), and code review v1 (`.review/CODE_REVIEW_CLAUDE_Fable_5_v1_20260706T1039Z/`,
+4–5 July 2026), code review v1 (`.review/CODE_REVIEW_CLAUDE_Fable_5_v1_20260706T1039Z/`,
 2026-07-06 — no HIGH findings), remediated by BFX-01..07 on
-[PR #9](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/9), merged 2026-07-17 (`3247130`)
+[PR #9](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/9), merged 2026-07-17 (`3247130`),
+and code review v2 (`.review/CODE_REVIEW_CLAUDE_Fable_5_v2_20260718T0608Z/`, 2026-07-18 — no HIGH
+findings), remediated by TRIAGE-01..06 on PRs
+[#11](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/11)–[#16](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/16),
+merged 2026-07-20
 
 This backlog tracks the SPEC-unit roadmap and any risks against it; ordering follows the
 specification's mandatory implementation order (SPEC-001 → 006, 007 stretch).
@@ -34,12 +39,14 @@ None.
 
 ### MEDIUM Priority (Score: 10–19)
 
-None. Risks #2–#4 (code review v1) resolved 2026-07-17 — see Resolved Risks below.
+None. Risks #2–#4 (code review v1) resolved 2026-07-17; review v2 Risk #1 resolved 2026-07-20 —
+see Resolved Risks below.
 
 ### LOW Priority (Score: 0–9)
 
-Risks #5–#8 (code review v1) resolved 2026-07-17 — see Resolved Risks below. One LOW item remains
-open (unrelated recurring-maintenance item, not a review finding):
+Risks #5–#8 (code review v1) resolved 2026-07-17; review v2 Risks #2–#6 resolved 2026-07-20 — see
+Resolved Risks below. One LOW item remains open (unrelated recurring-maintenance item, not a
+review finding):
 
 #### Risk #1: Pinned-trio drift (Cypress / cucumber-preprocessor / esbuild-preprocessor) — Score: 5
 
@@ -116,6 +123,49 @@ the serialisable `sortedSides()` projection (plain arrays) instead of the raw `M
 the fix).
 **See:** commit `6099f91`, BFX-07, PR #9, merged 2026-07-17 (`3247130`).
 
+#### Review v2 Risk #1: `unsubscribed`-ack shape unvalidated at both call sites ✅ Resolved 2026-07-20
+
+**Resolution:** `cypress/schemas/unsubscribedAck.ts` added (`isUnsubscribedAck` guard, verified
+against docs.bitfinex.com/docs/ws-general); wired into `TheUnsubscriptionConfirmation.status()`
+(replacing an ad hoc cast) and `Unsubscribe.performAs()` (now fails fast with the raw frame if the
+ack doesn't validate). Local `UnsubscribedAck` type and its dead re-export removed. Targeted
+`@extended` SPEC-006 run 4/4 (live API).
+**See:** commit `486339e`, TRIAGE-01, PR #11, merged 2026-07-20.
+
+#### Review v2 Risk #2: `docs/backlog.md` described PR #9 as open, not yet merged ✅ Resolved 2026-07-20
+
+**Resolution:** All 8 "open, not yet merged" occurrences plus 2 related "(PR #9, open)" mentions
+replaced with the merged-commit reference (`3247130`, 2026-07-17).
+**See:** commit `cfa4cf0`, TRIAGE-02, PR #12, merged 2026-07-20.
+
+#### Review v2 Risk #3: ADR-006 cited a stale file location for `sidesPureAndOrdered` ✅ Resolved 2026-07-20
+
+**Resolution:** Citation corrected from `cypress/support/step_definitions/spec-004.steps.ts` to
+`cypress/support/books/invariants.ts` (the location BFX-04 moved it to).
+**See:** commit `c7439f9`, TRIAGE-03, PR #13, merged 2026-07-20.
+
+#### Review v2 Risk #4: `check-book-diagnostics.ts` had no npm script and neither pure-proof script ran in CI ✅ Resolved 2026-07-20
+
+**Resolution:** Added `check:book-diagnostics` and a composite `check:pure` (runs both proof
+scripts); wired into CI's `smoke` job between `lint` and `test:smoke`.
+**See:** commit `540bdb2`, TRIAGE-04, PR #14, merged 2026-07-20.
+
+#### Review v2 Risk #5: ADR-003 never drew the inline-predicate boundary ✅ Resolved 2026-07-20
+
+**Resolution:** Added a sentence to ADR-003 stating single-expression predicates over
+already-answered values may be inline in step files; anything with branching, iteration state, or
+reuse moves to the schema/invariant modules.
+**See:** commit `fc38de5`, TRIAGE-05, PR #15, merged 2026-07-20.
+
+#### Review v2 Risk #6: `extended` CI job skipped static gates; fork-PR live-API implication undocumented ✅ Resolved 2026-07-20
+
+**Resolution:** `extended` job now runs `typecheck`/`lint` before `test:extended`, matching
+`smoke`'s ordering. README's Live-API etiquette section documents that a fork PR's `smoke` run
+does exercise the live public Bitfinex API using this repo's Actions minutes pre-review, with no
+credential exposure. Decision (user, 2026-07-19): document, don't restrict the `pull_request`
+trigger.
+**See:** commit `639f53e`, TRIAGE-06, PR #16, merged 2026-07-20.
+
 #### npm audit: mocha transitive vulnerabilities (1 high, 1 moderate, 1 low) ✅ Resolved 2026-07-04
 
 **Resolution:** `overrides` in `package.json` force patched `diff` (^8.0.3) and
@@ -131,9 +181,9 @@ consecutive green runs prove no breakage.
 |---|---|---|---|
 | HIGH (20–30) | 0 | — | — |
 | MEDIUM (10–19) | 0 | — | — |
-| LOW (0–9) | 1 | ~1 hr per deliberate upgrade | READY TO START (recurring maintenance, unrelated to review v1) |
+| LOW (0–9) | 1 | ~1 hr per deliberate upgrade | READY TO START (recurring maintenance, unrelated to either review) |
 | **Total Outstanding** | **1** | recurring | |
-| Resolved | 8 | | 7 via WORKLIST_bfx-ws-screenplay.md (PR #9, merged) + 1 prior |
+| Resolved | 14 | | 7 via PR #9 (review v1) + 6 via PRs #11–#16 (review v2) + 1 prior |
 
 ---
 
@@ -205,6 +255,7 @@ feature file → **Gary's review** → implement → three consecutive green run
 |---|---|---|---|---|---|
 | Done | HIGH | SPEC-002..006 (full in-scope roadmap) | ~13 hrs actual | 2026-07-04 | 2026-07-06 |
 | Done | MEDIUM+LOW | Review v1 findings: Risks #2–#8 (BFX-01..07, PR #9, merged) | ~5.5 hrs | 2026-07-17 | 2026-07-17 |
+| Done | MEDIUM+LOW | Review v2 findings: Risks #1–#6 (TRIAGE-01..06, PRs #11–#16, merged) | ~2 hrs | 2026-07-20 | 2026-07-20 |
 | Later | — | SPEC-007 stretch decision (still open); Risk #1 pinned-trio maintenance (recurring) | — | TBD | TBD |
 
 ---
@@ -214,7 +265,8 @@ feature file → **Gary's review** → implement → three consecutive green run
 - Include links/paths to affected files when adding new items
 - Update version number at top when items change status
 - Cross-reference code review findings in `.review/` — code review v1
-  (`CODE_REVIEW_CLAUDE_Fable_5_v1_20260706T1039Z/`) triaged into Risks #2–#8
+  (`CODE_REVIEW_CLAUDE_Fable_5_v1_20260706T1039Z/`) triaged into Risks #2–#8; code review v2
+  (`CODE_REVIEW_CLAUDE_Fable_5_v2_20260718T0608Z/`) triaged into review v2 Risks #1–#6
 - Mark completion dates when items move to ✅ Resolved
 - The design spec (`SPECIFICATION.md`) is normative — backlog items never override it; deviations
   need an ADR change note in `docs/adr/` first
