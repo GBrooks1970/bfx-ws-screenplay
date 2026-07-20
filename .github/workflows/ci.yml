@@ -39,6 +39,7 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm run lint
+      - run: npm run check:pure
       - run: npm run test:smoke
       - uses: actions/upload-artifact@v6
         if: always()

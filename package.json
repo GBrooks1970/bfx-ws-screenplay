@@ -20,7 +20,9 @@
     "test:extended": "cypress run --env tags=\"@smoke or @extended\"",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "check:checksum-serialization": "tsx scripts/check-checksum-serialization.ts"
+    "check:checksum-serialization": "tsx scripts/check-checksum-serialization.ts",
+    "check:book-diagnostics": "tsx scripts/check-book-diagnostics.ts",
+    "check:pure": "npm run check:checksum-serialization && npm run check:book-diagnostics"
   },
   "devDependencies": {
     "@badeball/cypress-cucumber-preprocessor": "25.0.0",
