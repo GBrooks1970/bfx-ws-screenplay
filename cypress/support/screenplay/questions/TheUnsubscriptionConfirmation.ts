@@ -1,7 +1,6 @@
 import { CommunicateOverWebSocket } from '../abilities/CommunicateOverWebSocket';
+import { isUnsubscribedAck } from '../../../schemas';
 import { AssertionError, Question } from '../core';
-
-export type UnsubscribedAck = { event: 'unsubscribed'; status: string; chanId: number };
 
 /** the `unsubscribed` ack for the released channel — answered from the buffer. */
 export class TheUnsubscriptionConfirmation {
@@ -18,8 +17,8 @@ export class TheUnsubscriptionConfirmation {
           { description: `the unsubscribed ack for channel ${chanId}` },
         )
         .then((frames): string => {
-          const ack = frames[0]?.frame as UnsubscribedAck | undefined;
-          if (!ack || typeof ack.status !== 'string') {
+          const ack = frames[0]?.frame;
+          if (!isUnsubscribedAck(ack)) {
             throw new AssertionError('No unsubscribed ack was found for the channel');
           }
           return ack.status;
