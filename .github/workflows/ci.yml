@@ -59,6 +59,8 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
       - run: npm run test:extended
       - uses: actions/upload-artifact@v6
         if: always()
