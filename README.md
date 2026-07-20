@@ -94,6 +94,15 @@ report from product failures.
 `@smoke` runs on push; the full `@extended` suite runs nightly only. One
 connection per scenario, torn down unconditionally in an `After` hook.
 
+The `smoke` job also runs on every `pull_request`, including PRs opened from a
+fork — the trigger is left unrestricted (code review v2, Risk #6) rather than
+scoped to trusted branches only, so a fork PR's `smoke` run does exercise the
+live public Bitfinex API using this repository's Actions minutes before a
+maintainer reviews the diff. No secrets or write credentials are exposed to
+it (the endpoint is public, unauthenticated, and `permissions: contents:
+read` at workflow level), so the exposure is Actions-quota usage, not
+credential leakage.
+
 ## Version pins
 
 Dependencies are pinned **exactly** (no caret): the
