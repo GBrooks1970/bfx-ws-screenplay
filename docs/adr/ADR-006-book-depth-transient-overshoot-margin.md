@@ -6,7 +6,7 @@
 exceeds subscribed length" — the subscription is `len: '25'`
 (`BOOK_SETTINGS.len`, `cypress/support/config/index.ts`). The maintained-book
 purity check (`sidesPureAndOrdered` in
-`cypress/support/step_definitions/spec-004.steps.ts`) instead bounds each
+`cypress/support/books/invariants.ts`) instead bounds each
 side at `1 <= size <= 30`, not `<= 25`.
 
 ## Rationale
