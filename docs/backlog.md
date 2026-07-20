@@ -8,13 +8,12 @@
 
 # bfx-ws-screenplay — Backlog
 
-**Version:** 7 — code review v1 findings (Risks #2–#8) resolved via WORKLIST_bfx-ws-screenplay.md
-**Last Updated:** 2026-07-17
+**Version:** 8 — code review v1 findings (Risks #2–#8) resolved via WORKLIST_bfx-ws-screenplay.md
+**Last Updated:** 2026-07-20
 **Based on:** `SPECIFICATION.md` (normative design spec), the SPEC-001..006 review packs (approved
 4–5 July 2026), and code review v1 (`.review/CODE_REVIEW_CLAUDE_Fable_5_v1_20260706T1039Z/`,
 2026-07-06 — no HIGH findings), remediated by BFX-01..07 on
-[PR #9](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/9) (open, not yet merged as of
-2026-07-17)
+[PR #9](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/9), merged 2026-07-17 (`3247130`)
 
 This backlog tracks the SPEC-unit roadmap and any risks against it; ordering follows the
 specification's mandatory implementation order (SPEC-001 → 006, 007 stretch).
@@ -71,42 +70,42 @@ trio together, re-run all gates plus one live `@extended` run.
 throws a named `ChecksumSerializationError` on exponent-range magnitudes instead of silently
 diverging from the wire. Pure unit check (`scripts/check-checksum-serialization.ts`, 5/5) covers
 the exponent-range case (`1e-7`, `1e21`). Gates (typecheck/lint/test:smoke) green.
-**See:** commit `db3ed18`, BFX-01, PR #9 (open, not yet merged).
+**See:** commit `db3ed18`, BFX-01, PR #9, merged 2026-07-17 (`3247130`).
 
 #### Risk #3 (review #2): Book-depth invariant relaxed (25 → 30) without an ADR change note ✅ Resolved 2026-07-17
 
 **Resolution:** `docs/adr/ADR-006-book-depth-transient-overshoot-margin.md` added, documenting the
 transient-overshoot rationale and the `<= 30` margin; cross-referenced from `SPECIFICATION.md`
 SPEC-004.
-**See:** commit `07e356f`, BFX-02, PR #9 (open, not yet merged).
+**See:** commit `07e356f`, BFX-02, PR #9, merged 2026-07-17 (`3247130`).
 
 #### Risk #4 (review #3): `ws:send` reports success unconditionally; no socket-state guard ✅ Resolved 2026-07-17
 
 **Resolution:** `driver.ts` `send()` now checks `readyState`; returns a new `SendResult` on a closed
 socket; the ability rescans for blocking codes and throws `EnvironmentBlockedError`/
 `ConfigurationError` as appropriate.
-**See:** commit `fbdd451`, BFX-03, PR #9 (open, not yet merged).
+**See:** commit `fbdd451`, BFX-03, PR #9, merged 2026-07-17 (`3247130`).
 
 #### Risk #5 (review #4): Non-trivial invariant logic accumulating in the step-definition layer ✅ Resolved 2026-07-17
 
 **Resolution:** Book-side invariants moved into `cypress/support/books/invariants.ts`; OHLC
 invariants (`candlesRespectOhlcInvariants`) moved beside the candle schema; steps return to pure
 delegation (ADR-003). Verified live via a targeted `@extended` run (SPEC-004/005, 7/7).
-**See:** commit `f668a16`, BFX-04, PR #9 (open, not yet merged).
+**See:** commit `f668a16`, BFX-04, PR #9, merged 2026-07-17 (`3247130`).
 
 #### Risk #6 (review #5): CI workflow lacks `timeout-minutes`, `concurrency`, and `permissions` ✅ Resolved 2026-07-17
 
 **Resolution:** `ci.yml` gained workflow-level `permissions: contents: read`, `timeout-minutes`
 (15 smoke / 30 extended), and a `concurrency` group with `cancel-in-progress: true` on the
 push-triggered `smoke` job. CI run green.
-**See:** commit `ce52585`, BFX-05, PR #9 (open, not yet merged).
+**See:** commit `ce52585`, BFX-05, PR #9, merged 2026-07-17 (`3247130`).
 
 #### Risk #7 (review #6): `conf` acknowledgement validated inline, bypassing the schema catalogue ✅ Resolved 2026-07-17
 
 **Resolution:** `cypress/schemas/confEvent.ts` added (`isConfEvent` guard, verified against live
 Bitfinex docs); `EnableChecksumFrames` now validates the ack via the guard. Verified live via a
 targeted `@extended` SPEC-004 run (4/4).
-**See:** commit `4777b54`, BFX-06, PR #9 (open, not yet merged).
+**See:** commit `4777b54`, BFX-06, PR #9, merged 2026-07-17 (`3247130`).
 
 #### Risk #8 (review #7): Assertion failure messages stringify `Map`-based books to `{}` ✅ Resolved 2026-07-17
 
@@ -115,7 +114,7 @@ the serialisable `sortedSides()` projection (plain arrays) instead of the raw `M
 `MaintainedBook`, so a failed invariant's diagnostic prints the actual price levels. Demonstrated by
 `scripts/check-book-diagnostics.ts` (2/2 checks: reproduces the historical `{}` defect, then proves
 the fix).
-**See:** commit `6099f91`, BFX-07, PR #9 (open, not yet merged).
+**See:** commit `6099f91`, BFX-07, PR #9, merged 2026-07-17 (`3247130`).
 
 #### npm audit: mocha transitive vulnerabilities (1 high, 1 moderate, 1 low) ✅ Resolved 2026-07-04
 
@@ -134,7 +133,7 @@ consecutive green runs prove no breakage.
 | MEDIUM (10–19) | 0 | — | — |
 | LOW (0–9) | 1 | ~1 hr per deliberate upgrade | READY TO START (recurring maintenance, unrelated to review v1) |
 | **Total Outstanding** | **1** | recurring | |
-| Resolved | 8 | | 7 via WORKLIST_bfx-ws-screenplay.md (PR #9, open) + 1 prior |
+| Resolved | 8 | | 7 via WORKLIST_bfx-ws-screenplay.md (PR #9, merged) + 1 prior |
 
 ---
 
@@ -205,7 +204,7 @@ feature file → **Gary's review** → implement → three consecutive green run
 | Sprint | Priority | Items | Total Effort | Start | End |
 |---|---|---|---|---|---|
 | Done | HIGH | SPEC-002..006 (full in-scope roadmap) | ~13 hrs actual | 2026-07-04 | 2026-07-06 |
-| Done | MEDIUM+LOW | Review v1 findings: Risks #2–#8 (BFX-01..07, PR #9, open) | ~5.5 hrs | 2026-07-17 | 2026-07-17 |
+| Done | MEDIUM+LOW | Review v1 findings: Risks #2–#8 (BFX-01..07, PR #9, merged) | ~5.5 hrs | 2026-07-17 | 2026-07-17 |
 | Later | — | SPEC-007 stretch decision (still open); Risk #1 pinned-trio maintenance (recurring) | — | TBD | TBD |
 
 ---
