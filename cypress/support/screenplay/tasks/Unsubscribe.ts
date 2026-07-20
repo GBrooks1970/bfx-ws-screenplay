@@ -1,4 +1,5 @@
 import { CommunicateOverWebSocket } from '../abilities/CommunicateOverWebSocket';
+import { isUnsubscribedAck } from '../../../schemas';
 import { type Actor, AssertionError, Task } from '../core';
 
 /**
@@ -36,8 +37,10 @@ export class Unsubscribe extends Task {
       )
       .then((frames) => {
         const first = frames[0];
-        if (!first) {
-          throw new AssertionError('No unsubscribed ack was received');
+        if (!first || !isUnsubscribedAck(first.frame)) {
+          throw new AssertionError(
+            `No valid unsubscribed ack was received: ${JSON.stringify(first?.frame)}`,
+          );
         }
         actor.remembers('unsubscribed:chanId', chanId);
         actor.remembers('unsubscribed:ackIndex', first.index);

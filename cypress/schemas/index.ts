@@ -39,3 +39,4 @@ export {
   TRADE_PRICE_INDEX,
   type TradeFields,
 } from './tradesChannel';
+export { isUnsubscribedAck, type UnsubscribedAck } from './unsubscribedAck';
