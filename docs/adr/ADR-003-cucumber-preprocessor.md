@@ -7,3 +7,8 @@ maintained fork), bundled with `@bahmutov/cypress-esbuild-preprocessor`.
 Feature files are the executable specification; step definitions contain no
 logic beyond delegating to Screenplay Tasks and Questions — assertions are
 delegated too, via `Ensure.that(question, expectation)`.
+
+**Inline-predicate boundary** (code review v2, Risk #5): single-expression
+predicates over already-answered values may be defined inline in step files;
+anything with branching, iteration state, or reuse moves to the
+schema/invariant modules (`cypress/schemas/`, `cypress/support/books/`).
