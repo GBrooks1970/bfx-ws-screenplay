@@ -15,3 +15,10 @@ with an explicit timeout constant in one configuration module
   (`EnvironmentBlockedError`), distinguishable in reports from a product
   failure. A timed-out wait rescans the buffer for blocking codes before it is
   allowed to report a timeout.
+- On the trades channel a bounded `te` wait that times out with no blocking
+  code is further **classified** rather than blindly failed: a quiet market (no
+  trade executed within the window, but connection, subscription and a
+  schema-valid snapshot all present) surfaces as environment-blocked, while a
+  malformed/mis-paired frame, an unacknowledged subscription, a missing
+  snapshot or a socket fault stays a loud product failure. See
+  [ADR-008](./ADR-008-trade-starvation-classification.md).
