@@ -1,5 +1,5 @@
 import { CommunicateOverWebSocket } from '../abilities/CommunicateOverWebSocket';
-import { CANDLES, TIMEOUTS } from '../../config';
+import { CANDLES, SYMBOLS, TIMEOUTS } from '../../config';
 import {
   isCandleFields,
   isTickerFields,
@@ -9,6 +9,7 @@ import {
   type TradeFields,
 } from '../../../schemas';
 import { AssertionError, Question } from '../core';
+import { onTradeObservationTimeout } from '../trades';
 import type { ObservedExecution } from '../tasks/ObserveAnExecutedTrade';
 
 /** A tu frame paired back to its remembered te observation. */
@@ -60,6 +61,11 @@ export class ReceivedUpdates {
             minCount: atLeast,
             timeoutMs: TIMEOUTS.updateWaitMs,
             description: `${atLeast} executed trade(s) (te frames)`,
+            onTimeout: onTradeObservationTimeout({
+              chanId,
+              symbol: SYMBOLS.primary,
+              timeoutMs: TIMEOUTS.updateWaitMs,
+            }),
           },
         )
         .then((frames): TradeFields[] =>

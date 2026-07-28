@@ -1,7 +1,8 @@
 import { CommunicateOverWebSocket } from '../abilities/CommunicateOverWebSocket';
-import { TIMEOUTS } from '../../config';
+import { SYMBOLS, TIMEOUTS } from '../../config';
 import { isTradeFields, TRADE_ID_INDEX } from '../../../schemas';
 import { type Actor, AssertionError, Task } from '../core';
+import { onTradeObservationTimeout } from '../trades';
 
 /**
  * Catalogue addition, 5 July 2026 (SPEC-003 review): waits (bounded) for one
@@ -24,7 +25,15 @@ export class ObserveAnExecutedTrade extends Task {
     return CommunicateOverWebSocket.as(actor)
       .messagesWhere(
         { kind: 'channel', chanId, label: 'te' },
-        { timeoutMs: TIMEOUTS.updateWaitMs, description: 'an executed trade (te frame)' },
+        {
+          timeoutMs: TIMEOUTS.updateWaitMs,
+          description: 'an executed trade (te frame)',
+          onTimeout: onTradeObservationTimeout({
+            chanId,
+            symbol: SYMBOLS.primary,
+            timeoutMs: TIMEOUTS.updateWaitMs,
+          }),
+        },
       )
       .then((frames) => {
         const first = frames[0];

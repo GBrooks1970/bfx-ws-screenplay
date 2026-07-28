@@ -22,7 +22,8 @@
     "typecheck": "tsc --noEmit",
     "check:checksum-serialization": "tsx scripts/check-checksum-serialization.ts",
     "check:book-diagnostics": "tsx scripts/check-book-diagnostics.ts",
-    "check:pure": "npm run check:checksum-serialization && npm run check:book-diagnostics"
+    "check:trade-starvation": "tsx scripts/check-trade-starvation-classification.ts",
+    "check:pure": "npm run check:checksum-serialization && npm run check:book-diagnostics && npm run check:trade-starvation"
   },
   "devDependencies": {
     "@badeball/cypress-cucumber-preprocessor": "25.0.0",

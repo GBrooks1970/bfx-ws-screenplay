@@ -261,7 +261,7 @@ Each unit below is an independent SDD work package. **Definition of Done for eve
 
 **Behaviour:** Subscribing to trades yields an ack, a snapshot (array of schema-valid trades), and subsequent `te`/`tu` frames that validate against their schemas.
 **Invariants:** each trade has positive absolute amount and positive price; `tu` for a given trade ID follows its `te`.
-**Note:** on quiet pairs, updates may not arrive within the timeout; the scenario asserting live updates must use a high-liquidity symbol from config and may be tagged `@extended`.
+**Note:** on quiet pairs, updates may not arrive within the timeout; the scenario asserting live updates must use a high-liquidity symbol from config and may be tagged `@extended`. When a `te` wait times out although the connection, subscription acknowledgement and a schema-valid snapshot are all present, the outcome is classified as environment-blocked (quiet market), not an unexplained product failure; a malformed/mis-paired frame, an unacknowledged subscription, a missing snapshot or a socket fault remains distinctly failed. See `docs/adr/ADR-008-trade-starvation-classification.md`.
 
 ### SPEC-004 — Order book channel & checksum verification
 

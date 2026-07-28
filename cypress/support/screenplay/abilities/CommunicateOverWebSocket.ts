@@ -102,7 +102,18 @@ export class CommunicateOverWebSocket extends Ability {
    */
   messagesWhere(
     spec: PredicateSpec,
-    options: PollOptions & { description?: string } = {},
+    options: PollOptions & {
+      description?: string;
+      /**
+       * Called when the wait genuinely times out and no platform blocking code
+       * is buffered — i.e. a bare "nothing matched" timeout. It receives this
+       * ability so it can gather further evidence and throw a more specific,
+       * evidence-bearing outcome (CODEX-03: trade starvation vs product
+       * failure). It never resolves normally; if it is absent the default
+       * `AssertionError` timeout is thrown.
+       */
+      onTimeout?: (ability: CommunicateOverWebSocket) => Cypress.Chainable<BufferedFrame[]>;
+    } = {},
   ): Cypress.Chainable<BufferedFrame[]> {
     const timeoutMs = options.timeoutMs ?? TIMEOUTS.messageWaitMs;
     const connectionId = this.requireConnectionId();
@@ -127,15 +138,35 @@ export class CommunicateOverWebSocket extends Ability {
             { connectionId, predicateSpec: ENVIRONMENT_BLOCKED, options: { timeoutMs: 0 } },
             { log: false },
           )
-          .then((blocked): BufferedFrame[] => {
+          .then((blocked): Cypress.Chainable<BufferedFrame[]> | BufferedFrame[] => {
             if (blocked.frames.length > 0) {
               throw new EnvironmentBlockedError(
                 `the platform reported a blocking status while waiting for ${subject}`,
               );
             }
+            if (options.onTimeout) {
+              return options.onTimeout(this);
+            }
             throw new AssertionError(`Timed out after ${timeoutMs} ms waiting for ${subject}`);
           });
       });
+  }
+
+  /**
+   * A non-blocking read of the frames currently matching a predicate (poll with
+   * a zero timeout). Unlike `messagesWhere` it never asserts or throws on an
+   * empty buffer — it is a diagnostic primitive for gathering evidence (e.g.
+   * how many `te`/`tu` frames a starved trades window actually saw).
+   */
+  peek(spec: PredicateSpec): Cypress.Chainable<BufferedFrame[]> {
+    const connectionId = this.requireConnectionId();
+    return cy
+      .task<PollResult>(
+        'ws:poll',
+        { connectionId, predicateSpec: spec, options: { timeoutMs: 0 } },
+        { log: false },
+      )
+      .then((result) => result.frames);
   }
 
   close(): Cypress.Chainable<OkResult> {
