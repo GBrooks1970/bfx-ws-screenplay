@@ -1,10 +1,14 @@
 /**
- * Standalone unit check for `wireNumber`/`checksumString` (review Risk #1,
- * MEDIUM): guards the flagship checksum assertion against `String()`'s
- * silent exponent-notation fallback for very small/large magnitudes.
+ * Standalone unit + fixture check for `wireNumber`/`checksumString` (Codex
+ * review v1, Risk #1, HIGH): proves the deterministic plain-decimal checksum
+ * serialiser defined in `docs/adr/ADR-007-checksum-numeric-token-contract.md`.
+ * `wireNumber` now *converts* exponent-form values (e.g. `1e-8`) to their
+ * canonical plain-decimal token rather than throwing, and only a non-finite
+ * value is rejected. The CRC fixture pins the exact checksum string and its
+ * signed CRC-32 for a known sub-tick book without weakening the live comparison.
  *
  * Deliberately outside Cypress: these are pure functions over the book
- * modules, so this proves the guard without a browser context, a live
+ * modules, so this proves the serialiser without a browser context, a live
  * connection, or a test runner. Run with:
  *
  *   npx tsx scripts/check-checksum-serialization.ts
@@ -14,6 +18,7 @@
  */
 import {
   applyLevel,
+  bookChecksum,
   checksumString,
   ChecksumSerializationError,
   emptyBook,
@@ -53,23 +58,39 @@ const checks: Array<[string, () => void]> = [
     },
   ],
   [
-    'wireNumber: exponent-range magnitude (1e-7) throws a named, explained error',
+    'wireNumber: exponent-form small magnitudes serialise to plain decimal (ADR-007)',
     () => {
-      const error = assertThrows(
-        () => wireNumber(1e-7),
-        ChecksumSerializationError,
-        'wireNumber(1e-7)',
-      );
-      assertEqual(error.name, 'ChecksumSerializationError', 'error.name');
-      if (!error.message.includes('1e-7') || !error.message.includes('exponent notation')) {
-        throw new Error(`wireNumber(1e-7) error message not diagnosable: ${error.message}`);
-      }
+      assertEqual(wireNumber(1e-7), '0.0000001', 'wireNumber(1e-7)');
+      assertEqual(wireNumber(1e-8), '0.00000001', 'wireNumber(1e-8)');
+      assertEqual(wireNumber(-1e-8), '-0.00000001', 'wireNumber(-1e-8)');
+      assertEqual(wireNumber(1.5e-7), '0.00000015', 'wireNumber(1.5e-7)');
     },
   ],
   [
-    'wireNumber: large-magnitude token (1e21) also throws, not just small ones',
+    'wireNumber: large magnitudes, ordinary decimals and signed zero serialise per contract',
     () => {
-      assertThrows(() => wireNumber(1e21), ChecksumSerializationError, 'wireNumber(1e21)');
+      assertEqual(wireNumber(1e21), '1000000000000000000000', 'wireNumber(1e21)');
+      assertEqual(wireNumber(0.10783801), '0.10783801', 'wireNumber(0.10783801)');
+      assertEqual(wireNumber(0), '0', 'wireNumber(0)');
+      assertEqual(wireNumber(-0), '0', 'wireNumber(-0)');
+    },
+  ],
+  [
+    'wireNumber: a non-finite value is still rejected loudly',
+    () => {
+      const error = assertThrows(
+        () => wireNumber(Number.NaN),
+        ChecksumSerializationError,
+        'wireNumber(NaN)',
+      );
+      if (!error.message.includes('finite')) {
+        throw new Error(`wireNumber(NaN) error not diagnosable: ${error.message}`);
+      }
+      assertThrows(
+        () => wireNumber(Number.POSITIVE_INFINITY),
+        ChecksumSerializationError,
+        'wireNumber(Infinity)',
+      );
     },
   ],
   [
@@ -87,14 +108,23 @@ const checks: Array<[string, () => void]> = [
     },
   ],
   [
-    'checksumString: an exponent-range level fails loudly, not with a silent wrong checksum',
+    'CRC fixture: a known sub-tick book yields the exact string and signed CRC-32',
     () => {
       const book = emptyBook();
       // A sub-tick-precision amount is the realistic route to exponent notation
-      // (low-priced pairs at high precision) — see review Risk #1.
-      const bidLevel: BookLevel = [0.0000001, 1, 1e-7];
+      // (low-priced pairs at high precision) — see review Risk #1 / ADR-007.
+      // Both levels carry values that String() would render in exponent form.
+      const bidLevel: BookLevel = [0.00000015, 1, 0.00000001]; // price 1.5e-7, amount +1e-8
+      const askLevel: BookLevel = [0.0000002, 1, -0.00000001]; // price 2e-7, amount -1e-8
       applyLevel(book, bidLevel);
-      assertThrows(() => checksumString(book), ChecksumSerializationError, 'checksumString(exponent-range book)');
+      applyLevel(book, askLevel);
+      assertEqual(
+        checksumString(book),
+        '0.00000015:0.00000001:0.0000002:-0.00000001',
+        'checksumString(sub-tick fixture)',
+      );
+      // Deterministic signed CRC-32 of the exact string above (pinned fixture).
+      assertEqual(bookChecksum(book), -591028654, 'bookChecksum(sub-tick fixture) signed CRC-32');
     },
   ],
 ];
