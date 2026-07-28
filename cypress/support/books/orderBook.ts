@@ -76,26 +76,67 @@ export function sortedSides(book: MaintainedBook): SortedBookSides {
 }
 
 /**
- * Serialises a single price/amount for the checksum wire string exactly as
- * the platform expects: a plain decimal token, never exponent notation.
+ * Serialises a single price/amount for the checksum wire string exactly as the
+ * platform expects: a plain decimal token, never exponent notation. Implements
+ * the numeric-token contract in `docs/adr/ADR-007-checksum-numeric-token-contract.md`.
  *
  * `String(number)` silently switches to exponent notation outside roughly
- * `1e-6 <= |n| < 1e21` (e.g. `String(1e-7) === '1e-7'`). Feeding that token
- * into the checksum input would diverge from Bitfinex's own serialisation
- * and produce a false CRC mismatch — a rare, hard-to-reproduce flake in the
- * project's flagship assertion rather than a loud, diagnosable failure.
- * Guarding here turns that latent gap into a named, explained error instead.
+ * `1e-6 <= |n| < 1e21` (e.g. `String(1e-7) === '1e-7'`), which would diverge
+ * from Bitfinex's own plain-decimal serialisation and produce a false CRC
+ * mismatch. Earlier this function *threw* on such values (a safe interim guard),
+ * but valid live data (a `1e-8` order amount) reaches that path, so it now
+ * converts deterministically to plain decimal instead. A non-finite value is
+ * outside the schema's contract and still fails loudly.
  */
 export function wireNumber(value: number): string {
-  const token = String(value);
-  if (token.includes('e') || token.includes('E')) {
+  if (!Number.isFinite(value)) {
     throw new ChecksumSerializationError(
-      `checksum serialisation gap: ${value} stringifies to exponent notation ('${token}'), which ` +
-        'would diverge from the Bitfinex checksum wire format; extend wireNumber() to handle this ' +
-        'magnitude before trusting the checksum assertion for it',
+      `checksum serialisation gap: ${value} is not a finite number; the book schema admits only ` +
+        'finite prices and amounts, so this is malformed input, not a serialisable value',
     );
   }
-  return token;
+  return toPlainDecimal(value);
+}
+
+/**
+ * Expands a finite number to canonical plain-decimal text with no exponent, per
+ * ADR-007: `1e-8` → `"0.00000001"`, `-1e-8` → `"-0.00000001"`, `1e21` →
+ * `"1000000000000000000000"`; ordinary in-range decimals (`0.10783801`) already
+ * stringify plainly and pass through unchanged. Both `0` and `-0` yield `"0"`.
+ */
+function toPlainDecimal(value: number): string {
+  // `-0 === 0` is true, so this single guard collapses negative zero to "0" too.
+  if (value === 0) {
+    return '0';
+  }
+
+  const token = String(value);
+  if (!token.includes('e') && !token.includes('E')) {
+    return token; // already plain decimal
+  }
+
+  const negative = token.startsWith('-');
+  const unsigned = negative ? token.slice(1) : token;
+  // `unsigned` is known to contain an exponent marker (guarded above), so these
+  // slices are always defined — avoids the possibly-undefined array destructure.
+  const eIndex = unsigned.search(/[eE]/);
+  const coefficient = unsigned.slice(0, eIndex);
+  const exponent = Number(unsigned.slice(eIndex + 1));
+  const pointIndex = coefficient.indexOf('.');
+  const digits = coefficient.replace('.', '');
+  // Where the decimal point sits, counted from the left of `digits`.
+  const pointPosition = (pointIndex === -1 ? coefficient.length : pointIndex) + exponent;
+
+  let magnitude: string;
+  if (pointPosition <= 0) {
+    magnitude = `0.${'0'.repeat(-pointPosition)}${digits}`;
+  } else if (pointPosition >= digits.length) {
+    magnitude = digits + '0'.repeat(pointPosition - digits.length);
+  } else {
+    magnitude = `${digits.slice(0, pointPosition)}.${digits.slice(pointPosition)}`;
+  }
+
+  return negative ? `-${magnitude}` : magnitude;
 }
 
 export function checksumString(book: MaintainedBook): string {
