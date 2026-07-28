@@ -74,11 +74,32 @@ Requires Node 20+ (CI runs Node 24, per `.nvmrc`).
 
 ```sh
 npm ci
+npm run test:unit       # deterministic TypeScript unit suite (node:test, no network)
 npm run test:smoke      # @smoke scenarios (SPEC-001, SPEC-002)
 npm run test:extended   # full tagged suite — nightly in CI, or dispatched with suite=extended
 npm run lint
 npm run typecheck
+npm run audit:ci        # dependency-audit gate (see docs/dependency-audit-policy.md)
 ```
+
+### Deterministic unit tests
+
+`npm run test:unit` runs the pure-logic suite in [`test/unit/`](test/unit) on
+Node's built-in `node:test` runner via `tsx` — **no new dependencies, no
+network, no browser**. It covers the checksum serialiser (SPEC-004 / ADR-007),
+the book diagnostic projection, and the trade-starvation classifier
+(ADR-008); these tests were migrated from the earlier `scripts/check-*.ts` proof
+scripts, and `npm run check:pure` is retained as a thin alias. A small discovery
+shim ([`test/unit/_all.test.ts`](test/unit/_all.test.ts)) loads every sibling
+`*.test.ts`, so the suite needs no glob support and runs identically on the Node
+20 floor and CI's Node 24.
+
+`npm run test:unit:coverage` additionally enforces a **≥70 % branch-coverage
+floor** over the critical pure modules (`orderBook`, `crc32`, `invariants`,
+`tradeStreamDiagnostics`) and is the gate CI runs before every Cypress suite. It
+uses Node's `--test-coverage-*` flags, which require the **Node 24 CI baseline**
+(Node ≥ 22.8); on the Node 20 floor use `npm run test:unit`, which reports and
+runs everywhere.
 
 The flagship assertion (SPEC-004): a locally maintained order-book replica must match the
 platform's own CRC-32 checksum frames five times consecutively — folded with buffer-index

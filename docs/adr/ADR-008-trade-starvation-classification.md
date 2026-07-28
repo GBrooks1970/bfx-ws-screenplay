@@ -67,8 +67,9 @@ failure. Only the "no trade executed at all" (`te`) waits are reclassified.
   message alone (Risk/dependency note on the worklist item).
 - **The decision is pure and unit-tested.** `classifyTradeStream` takes plain
   evidence and returns an outcome with no Cypress or socket dependency;
-  `scripts/check-trade-starvation-classification.ts` (in `npm run check:pure`)
-  pins every branch and the precedence between them.
+  `test/unit/trade-stream-classification.test.ts` (run by `npm run test:unit`;
+  migrated from the former proof script under CODEX-05) pins every branch and the
+  precedence between them.
 
 ## Verification
 

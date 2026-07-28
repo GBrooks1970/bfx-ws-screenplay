@@ -84,9 +84,11 @@ it leaves valid live data unassertable and keeps the flagship nightly red.
 
 - **CODEX-02** replaces the exponent rejection in `wireNumber()` with a
   deterministic exponent-to-plain-decimal serialiser meeting this contract, and
-  makes `scripts/check-checksum-serialization.ts` assert the *converted output*
-  for `1e-8`, `-1e-8`, large magnitudes, zero and ordinary decimals — not that a
-  throw occurred. CRC fixtures cover the boundary cases.
+  the unit suite `test/unit/checksum-serialization.test.ts` (run by
+  `npm run test:unit`; migrated from the former proof script under CODEX-05)
+  asserts the *converted output* for `1e-8`, `-1e-8`, large magnitudes, zero and
+  ordinary decimals — not that a throw occurred. CRC fixtures cover the boundary
+  cases.
 - `SPECIFICATION.md` Section 8 (SPEC-004) cross-references this ADR for the
   numeric-token rule; the algorithm-level description there is unchanged.
 - Until CODEX-02 lands, `wireNumber()` still throws on exponent input — the
