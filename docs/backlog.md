@@ -51,14 +51,16 @@ review finding):
 #### Risk #1: Pinned-trio drift (Cypress / cucumber-preprocessor / esbuild-preprocessor) — Score: 5
 
 **Priority Score:** Security Impact (1) + Breakage Probability (2) + Maintenance Burden (2) = **5 points**
-**Impact:** Cypress 15.18.0 already exists outside the preprocessor's peer range (caps at 15.17.0); an unconsidered upgrade breaks the build.
+**Impact:** Cypress releases have moved ahead of the preprocessor's peer cap — as of 28 July 2026 the latest is Cypress **15.19.0**, while `@badeball/cypress-cucumber-preprocessor@25.0.0` still caps its peer range at `>=15.0.0 <=15.17.0` (verified 28 July 2026). The trio is pinned at cypress 15.17.0 / preprocessor 25.0.0 / esbuild-preprocessor 2.2.8 (esbuild peer `>=0.17.0`, installed 0.28.1) — all mutually compatible, `npm ls` reports no peer conflicts. An unconsidered Cypress bump past 15.17.0 breaks the build.
 **Effort:** 1 hr per deliberate upgrade
 **Status:** READY TO START (recurring maintenance, not a defect)
 **Affected Stacks:** TypeScript/Cypress (single stack)
 
 **Problem:**
 Dependencies are exact-pinned by design (README pin table). The preprocessor's Cypress peer
-range moves later than Cypress releases, so upgrades must check the peer range first.
+range (currently `^12 || ^13 || ^14 || >=15.0.0 <=15.17.0`) moves later than Cypress releases, so
+upgrades must check the peer range first. The CODEX-04 audit overrides (`brace-expansion`,
+`postcss`) touch only leaf packages and do not affect this trio.
 
 **Refactor Strategy:**
 On each deliberate upgrade: check `@badeball/cypress-cucumber-preprocessor` peer range, bump the
@@ -165,6 +167,21 @@ does exercise the live public Bitfinex API using this repo's Actions minutes pre
 credential exposure. Decision (user, 2026-07-19): document, don't restrict the `pull_request`
 trigger.
 **See:** commit `639f53e`, TRIAGE-06, PR #16, merged 2026-07-20.
+
+#### CODEX-04: transitive HIGH audit findings + no executable audit policy ✅ Resolved 2026-07-28
+
+**Resolution:** Two HIGH transitive dev-only DoS advisories remediated with the smallest
+narrowly-reviewed override change — `brace-expansion` → `5.0.8` (the only version outside npm's
+`<=5.0.7` vulnerable range; dual-package `require` export keeps mocha's CJS `minimatch@9` working)
+and `postcss` → `8.5.24`, both leaf packages; the pinned trio is untouched. Added an **executable
+audit gate**: `npm run audit:ci` (`npm audit --audit-level=high`) runs after `npm ci` in **both**
+the `smoke` and `extended` CI jobs, failing the build on any unexcepted HIGH+. Policy, threshold,
+and the owner/expiry exception protocol are documented in `docs/dependency-audit-policy.md`; the
+README pin table and audit claim were reconciled and Risk #1's stale peer-range wording refreshed
+(latest Cypress 15.19.0 vs the `<=15.17.0` cap). `npm audit` = **0 vulnerabilities**; gates
+(typecheck/lint/check:pure/test:smoke) green. The trio did not change, so no live `@extended`
+re-validation was required.
+**See:** Codex review v1 Risk #2 / Recommendation P1; branch `worklist/codex-04-audit-dependency-policy`.
 
 #### npm audit: mocha transitive vulnerabilities (1 high, 1 moderate, 1 low) ✅ Resolved 2026-07-04
 

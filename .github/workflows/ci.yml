@@ -37,6 +37,10 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      # Dependency-audit gate (docs/dependency-audit-policy.md): fails the build
+      # on any unexcepted HIGH+ advisory. Runs before the suites so a vulnerable
+      # lockfile fails fast.
+      - run: npm run audit:ci
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run check:pure
@@ -59,6 +63,9 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      # Dependency-audit gate (docs/dependency-audit-policy.md) — same policy on
+      # the nightly/extended path.
+      - run: npm run audit:ci
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run test:extended

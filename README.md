@@ -117,8 +117,15 @@ to drift independently, so upgrades are deliberate.
 | `typescript` | 5.9.3 | Strict mode throughout |
 | `ws` | 8.21.0 | The Node-side WebSocket client (ADR-001) |
 
-`overrides` in `package.json` force patched `diff`/`serialize-javascript`
-inside mocha's tree (`npm audit`: 0 vulnerabilities).
+`overrides` in `package.json` force patched transitive dev-only dependencies —
+`diff`/`serialize-javascript` inside mocha's tree, plus `brace-expansion` (5.0.8)
+and `postcss` (8.5.24) to clear two HIGH DoS/path-traversal advisories. The trio
+above is untouched. `npm audit`: **0 vulnerabilities**.
+
+A dependency-audit gate — `npm run audit:ci` (`npm audit --audit-level=high`) —
+runs in both CI jobs and fails the build on any unexcepted HIGH+ finding. The
+threshold, and the owner/expiry protocol for any temporary exception, are in
+[docs/dependency-audit-policy.md](docs/dependency-audit-policy.md).
 
 ## Licence
 
