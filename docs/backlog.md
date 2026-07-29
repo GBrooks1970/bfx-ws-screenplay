@@ -8,17 +8,20 @@
 
 # bfx-ws-screenplay — Backlog
 
-**Version:** 9 — code review v1 (Risks #2–#8) and v2 (Risks #1–#6) findings resolved via
-WORKLIST_bfx-ws-screenplay.md
-**Last Updated:** 2026-07-20
+**Version:** 10 — code reviews v1 (Risks #2–#8), v2 (Risks #1–#6) and v3 (Codex GPT-5 →
+CODEX-01..10) findings resolved via WORKLIST_bfx-ws-screenplay.md
+**Last Updated:** 2026-07-29
 **Based on:** `SPECIFICATION.md` (normative design spec), the SPEC-001..006 review packs (approved
 4–5 July 2026), code review v1 (`.review/CODE_REVIEW_CLAUDE_Fable_5_v1_20260706T1039Z/`,
 2026-07-06 — no HIGH findings), remediated by BFX-01..07 on
 [PR #9](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/9), merged 2026-07-17 (`3247130`),
-and code review v2 (`.review/CODE_REVIEW_CLAUDE_Fable_5_v2_20260718T0608Z/`, 2026-07-18 — no HIGH
+code review v2 (`.review/CODE_REVIEW_CLAUDE_Fable_5_v2_20260718T0608Z/`, 2026-07-18 — no HIGH
 findings), remediated by TRIAGE-01..06 on PRs
 [#11](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/11)–[#16](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/16),
-merged 2026-07-20
+merged 2026-07-20, and code review v3 (`.review/CODE_REVIEW_CODEX_v1_20260724T0002Z/`, Codex
+GPT-5, 2026-07-24 — one HIGH, since resolved), remediated by CODEX-01..10 on PRs
+[#19](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/19)–[#27](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/27),
+merged 2026-07-28/29
 
 This backlog tracks the SPEC-unit roadmap and any risks against it; ordering follows the
 specification's mandatory implementation order (SPEC-001 → 006, 007 stretch).
@@ -72,6 +75,21 @@ trio together, re-run all gates plus one live `@extended` run.
 ---
 
 ### Resolved Risks
+
+#### Code review v3 (Codex GPT-5) — CODEX-01..10 ✅ Resolved 2026-07-28/29
+
+**Resolution:** All ten findings from `.review/CODE_REVIEW_CODEX_v1_20260724T0002Z/` remediated on
+PRs #19–#27 (details per item in `WORKLIST_bfx-ws-screenplay.md`): **CODEX-01/02** — checksum
+numeric-token contract (ADR-007) + deterministic exponent→plain-decimal serialiser; **CODEX-03** —
+trade-starvation classified as environment-blocked (ADR-008), malformed/pairing/socket faults stay
+loud; **CODEX-04** — two transitive HIGH advisories cleared (`brace-expansion` 5.0.8, `postcss`
+8.5.24) + executable `audit:ci` gate (`docs/dependency-audit-policy.md`); **CODEX-05/06/07** —
+conventional `node:test` unit suite (97 tests / 29 suites) with an ≥80 % branch-coverage floor over
+the pure surface, language-neutral JSON fixtures, and an injected socket/clock seam for
+deterministic driver-lifecycle tests; **CODEX-08** — exact `isBookChecksumFrame`/`isHeartbeatFrame`
+guards (live SPEC-004/006 confirmed); **CODEX-09** — Node floor (20) vs CI baseline (24)
+reconciled (ADR-009). `npm audit` = 0; the one HIGH (audit) and all MEDIUM/LOW findings are closed.
+**See:** review v3 pack; PRs [#19](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/19)–[#27](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/27).
 
 #### Risk #2 (review #1): Checksum string can diverge from the wire for exponent-notation magnitudes ✅ Resolved 2026-07-17
 
@@ -198,17 +216,18 @@ consecutive green runs prove no breakage.
 |---|---|---|---|
 | HIGH (20–30) | 0 | — | — |
 | MEDIUM (10–19) | 0 | — | — |
-| LOW (0–9) | 1 | ~1 hr per deliberate upgrade | READY TO START (recurring maintenance, unrelated to either review) |
+| LOW (0–9) | 1 | ~1 hr per deliberate upgrade | READY TO START (Risk #1 pinned-trio drift — recurring maintenance, unrelated to any review) |
 | **Total Outstanding** | **1** | recurring | |
-| Resolved | 14 | | 7 via PR #9 (review v1) + 6 via PRs #11–#16 (review v2) + 1 prior |
+| Resolved | 24 | | 7 via PR #9 (review v1) + 6 via PRs #11–#16 (review v2) + 10 via PRs #19–#27 (review v3, CODEX-01..10) + 1 prior |
 
 ---
 
 ## SPEC Roadmap (the project's migration plan)
 
-**Status:** ✅ COMPLETE — SPEC-001 → 006 all done and merged 2026-07-04/06; SPEC-007 stretch
-remains an open decision (out of initial scope, confirmed 4 July 2026, `SPECIFICATION.md`
-Section 11).
+**Status:** ✅ COMPLETE — SPEC-001 → 006 all done and merged 2026-07-04/06, and hardened through
+three code-review cycles (v1, v2, v3 = Codex GPT-5 / CODEX-01..10, all merged by 2026-07-29).
+SPEC-007 stretch **remains deferred** — disposition recorded 2026-07-29 (`SPECIFICATION.md`
+Section 11): not separately approved, not scheduled.
 
 Every unit follows the SDD gate (`SPECIFICATION.md` Section 10): verify live Bitfinex docs →
 feature file → **Gary's review** → implement → three consecutive green runs locally and in CI.
@@ -247,13 +266,13 @@ feature file → **Gary's review** → implement → three consecutive green run
      `tZECBTC` (REST survey + 15.0 s heartbeats observed). Post-unsubscribe silence proven
      deterministically via ping/pong sync barrier + buffer-index scan (no fixed waits).
      `heartbeatWaitMs` 30→45 s (review Q3).
-7. **SPEC-007 — Sequencing** — STRETCH (revisit after SPEC-006)
+7. **SPEC-007 — Sequencing** — STRETCH, **deferred** (disposition recorded 2026-07-29; not approved, not scheduled)
 
 **Success Criteria:**
 - [x] SPEC-002 → 006 complete, each with three consecutive green runs local + CI
 - [x] Quiet-pair symbol selected against the documented criterion (`tZECBTC`, SPEC-006), recorded
       in `cypress/support/config/index.ts`
-- [ ] SPEC-007 decision revisited after SPEC-006 (still open)
+- [x] SPEC-007 decision recorded (2026-07-29): remains a deferred stretch item, not separately approved
 
 ---
 
@@ -261,8 +280,10 @@ feature file → **Gary's review** → implement → three consecutive green run
 
 ### LOW Priority
 
-1. **Node engines floor** — 0.5 hr, OPEN QUESTION: `engines` is `>=20` (local dev machine runs
-   Node 20.19.5) while `.nvmrc`/CI pin 24; tighten to `>=24` only if local tooling moves.
+1. **Node engines floor** — ✅ RESOLVED 2026-07-29 (CODEX-09 / `docs/adr/ADR-009-node-support-baseline.md`):
+   minimum Node 20 (`engines >=20`, a checked support promise) with the dev/CI baseline on Node 24.
+   Revisit (tighten the floor to ≥22.8+) only when Node 20 leaves maintenance, which would let the
+   branch-coverage gate run everywhere.
 
 ---
 
@@ -273,7 +294,8 @@ feature file → **Gary's review** → implement → three consecutive green run
 | Done | HIGH | SPEC-002..006 (full in-scope roadmap) | ~13 hrs actual | 2026-07-04 | 2026-07-06 |
 | Done | MEDIUM+LOW | Review v1 findings: Risks #2–#8 (BFX-01..07, PR #9, merged) | ~5.5 hrs | 2026-07-17 | 2026-07-17 |
 | Done | MEDIUM+LOW | Review v2 findings: Risks #1–#6 (TRIAGE-01..06, PRs #11–#16, merged) | ~2 hrs | 2026-07-20 | 2026-07-20 |
-| Later | — | SPEC-007 stretch decision (still open); Risk #1 pinned-trio maintenance (recurring) | — | TBD | TBD |
+| Done | HIGH+MEDIUM+LOW | Review v3 (Codex GPT-5): CODEX-01..10 (PRs #19–#27, merged) | ~10 hrs | 2026-07-28 | 2026-07-29 |
+| Later | — | SPEC-007 stretch (deferred, disposition recorded 2026-07-29); Risk #1 pinned-trio maintenance (recurring) | — | TBD | TBD |
 
 ---
 

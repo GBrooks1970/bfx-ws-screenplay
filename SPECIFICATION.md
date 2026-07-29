@@ -2,9 +2,23 @@
 
 **Project codename:** `bfx-ws-screenplay`
 **Author:** Gary Brooks
-**Date:** 2 July 2026
-**Status:** Design & specification phase — no implementation
+**Date:** 2 July 2026 (originated); governance table last reconciled 29 July 2026
+**Status:** **Normative and implemented.** SPEC-001 → 006 are built, merged and exercised live in CI (nightly `@extended`); SPEC-007 remains a deferred stretch item (Section 11). This document stays the normative design contract — subsequent decisions and changes are recorded as ADRs (`docs/adr/`) and remediation worklists, not by rewriting the units below.
 **Intended consumers:** A human engineer or an AI coding agent, working under Specification Driven Development (SDD). Every specification unit in Section 8 is written to be independently implementable and verifiable without reference to the author.
+
+### Source of truth / governance
+
+| Concern | Authority | Location |
+|---|---|---|
+| Normative design, scope, spec units | This specification | `SPECIFICATION.md` |
+| Design decisions & subsequent changes | Architecture Decision Records | `docs/adr/ADR-001..009` |
+| Current operations & health | CI workflow + live nightly `@extended` | `.github/workflows/ci.yml`, GitHub Actions |
+| Dependency & vulnerability policy | Audit gate + policy | `docs/dependency-audit-policy.md`, `npm run audit:ci` |
+| Outstanding work, risks, roadmap | Backlog | `docs/backlog.md` |
+| Historical review evidence & remediation | Review packs + worklists | `.review/`, `WORKLIST_bfx-ws-screenplay.md` (portfolio root) |
+
+Where this table and any narrative disagree, the linked authority wins for its
+concern; the spec units in Section 8 remain normative for behaviour.
 
 ---
 
@@ -309,7 +323,7 @@ All four open items were confirmed by Gary on 4 July 2026:
 
 1. **Symbols under test — confirmed.** tBTCUSD as high-liquidity primary; tETHUSD as the second parameterised pair for the SPEC-004 Scenario Outline. The quiet pair for heartbeat scenarios is deliberately **not** named here: it is selected empirically at implementation time against a documented criterion (typically minutes between trades, checked via the public REST 24h-volume data) and held in `support/config` so it can be swapped without code change. Consequential detail: Bitfinex emits `hb` frames at roughly 15-second intervals, which exceeds ADR-005's default 10-second message wait; heartbeat scenarios therefore use their own named timeout constant (30 seconds) in the config module. This is consistent with ADR-005 (explicit named timeouts), not a deviation from it.
 2. **Repository and licence — confirmed.** Public repo `bfx-ws-screenplay`, MIT licence.
-3. **SPEC-007 — confirmed out of initial scope.** Remains a stretch item, revisited after SPEC-006. Rationale: SPEC-001→006 covers every skill gap the role-fit report identified; the `conf` plumbing built for SPEC-004 makes SPEC-007's later marginal cost small.
+3. **SPEC-007 — deferred (disposition recorded 29 July 2026).** Confirmed out of initial scope 4 July 2026 and **remains a deferred stretch item** after the SPEC-001→006 build and three code-review cycles (v1, v2, and v3 = Codex GPT-5 → CODEX-01..10, all remediated). It has **not** been separately approved for implementation; it stays `@stretch`, not scheduled. Rationale unchanged: SPEC-001→006 covers every skill gap the role-fit report identified, and the `conf` plumbing built for SPEC-004 keeps SPEC-007's later marginal cost small should the owner approve it.
 4. **Version pins — confirmed.** Node: **minimum Node 20** (`package.json#engines` = `>=20`, the support promise) with the **development/CI baseline on Node 24** (current active LTS) via `.nvmrc` = `24` and `setup-node` with `node-version: 24`. The branch-coverage gate needs Node ≥ 22.8, so it runs on the CI baseline; the static and unit gates run on the Node 20 floor. See `docs/adr/ADR-009-node-support-baseline.md`. Cypress: the newest major supported by `@badeball/cypress-cucumber-preprocessor` at SPEC-001 start (v15 as of preprocessor v24.0.1), with **exact version pins** (no caret) for `cypress`, `@badeball/cypress-cucumber-preprocessor`, and `@bahmutov/cypress-esbuild-preprocessor`, since this trio breaks when allowed to drift independently. TypeScript current 5.x, strict. Pins recorded in the README.
 
 Additionally confirmed (4 July 2026): the Screenplay core will be a **Cypress-adapted derivative of Gary's existing `hand-baked-screenplay-pattern` library** — see the note appended to ADR-002.
