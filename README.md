@@ -97,8 +97,9 @@ shim ([`test/unit/_all.test.ts`](test/unit/_all.test.ts)) loads every sibling
 `npm run test:unit:coverage` additionally enforces a **≥80 % branch-coverage
 floor** over the critical pure surface — the predicate matcher, every message
 schema guard, the book maintenance/checksum/invariant modules, the error
-taxonomy, and the trade-stream classifier — and is the gate CI runs before every
-Cypress suite. It uses Node's `--test-coverage-*` flags, which require the
+taxonomy, the trade-stream classifier, and the WebSocket driver lifecycle
+(exercised through an injected socket/clock seam, no real socket) — and is the
+gate CI runs before every Cypress suite. It uses Node's `--test-coverage-*` flags, which require the
 **Node 24 CI baseline** (Node ≥ 22.8); on the Node 20 floor use `npm run
 test:unit`, which reports and runs everywhere.
 

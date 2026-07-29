@@ -17,10 +17,68 @@ import type {
  * monotonically increasing index and receipt timestamp. Questions never
  * 'listen'; they poll this buffer via ws:poll. This converts the
  * asynchronous stream into a synchronously assertable log.
+ *
+ * The socket, clock and id source are injected through `deps` (CODEX-07): the
+ * production defaults are `ws`, `Date.now`/`setTimeout` and `randomUUID`, so the
+ * cy.task bridge contract is unchanged. Tests swap in a fake socket and a clock
+ * to drive the open/poll/close lifecycle deterministically, without opening a
+ * real socket, via `__setDriverDeps`.
  */
 
+/** The minimal socket surface the driver uses — structurally satisfied by `ws`. */
+export type DriverSocket = {
+  readyState: number;
+  on(event: string, listener: (arg?: unknown) => void): void;
+  send(data: string): void;
+  close(): void;
+  terminate(): void;
+  removeAllListeners(): void;
+};
+
+/**
+ * The time boundary. `setTimer` returns its own cancel function; `sleep` is the
+ * poll loop's back-off. A fake clock makes the connect-timeout and poll-timeout
+ * paths deterministic.
+ */
+export type DriverClock = {
+  now(): number;
+  setTimer(callback: () => void, ms: number): () => void;
+  sleep(ms: number): Promise<void>;
+};
+
+export type DriverDeps = {
+  createSocket(url: string, options: { handshakeTimeout: number }): DriverSocket;
+  clock: DriverClock;
+  uuid(): string;
+};
+
+const productionDeps: DriverDeps = {
+  createSocket: (url, options) => new WebSocket(url, options) as unknown as DriverSocket,
+  clock: {
+    now: () => Date.now(),
+    setTimer: (callback, ms) => {
+      const handle = setTimeout(callback, ms);
+      return () => clearTimeout(handle);
+    },
+    sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+  },
+  uuid: () => randomUUID(),
+};
+
+let deps: DriverDeps = productionDeps;
+
+/** Test seam (CODEX-07): override selected deps; never called by the bridge. */
+export function __setDriverDeps(overrides: Partial<DriverDeps>): void {
+  deps = { ...productionDeps, ...overrides };
+}
+
+/** Test seam (CODEX-07): restore the production socket/clock/id source. */
+export function __resetDriverDeps(): void {
+  deps = productionDeps;
+}
+
 type Session = {
-  socket: WebSocket;
+  socket: DriverSocket;
   frames: BufferedFrame[];
   nextIndex: number;
 };
@@ -37,11 +95,11 @@ function bufferFrame(session: Session, raw: unknown): void {
   } catch {
     frame = String(raw);
   }
-  session.frames.push({ index: session.nextIndex++, receivedAt: Date.now(), frame });
+  session.frames.push({ index: session.nextIndex++, receivedAt: deps.clock.now(), frame });
 }
 
 export function open(url: string, connectionTimeoutMs: number): Promise<OpenResult> {
-  const startedAt = Date.now();
+  const startedAt = deps.clock.now();
 
   let parsed: URL;
   try {
@@ -51,7 +109,7 @@ export function open(url: string, connectionTimeoutMs: number): Promise<OpenResu
       ok: false,
       reason: 'invalid-url',
       message: `Not a parseable URL: '${url}'`,
-      elapsedMs: Date.now() - startedAt,
+      elapsedMs: deps.clock.now() - startedAt,
     });
   }
   if (parsed.protocol !== 'wss:' && parsed.protocol !== 'ws:') {
@@ -59,13 +117,13 @@ export function open(url: string, connectionTimeoutMs: number): Promise<OpenResu
       ok: false,
       reason: 'invalid-url',
       message: `Not a WebSocket URL (protocol '${parsed.protocol}'): '${url}'`,
-      elapsedMs: Date.now() - startedAt,
+      elapsedMs: deps.clock.now() - startedAt,
     });
   }
 
   return new Promise<OpenResult>((resolve) => {
-    const connectionId = randomUUID();
-    const socket = new WebSocket(url, { handshakeTimeout: connectionTimeoutMs });
+    const connectionId = deps.uuid();
+    const socket = deps.createSocket(url, { handshakeTimeout: connectionTimeoutMs });
     const session: Session = { socket, frames: [], nextIndex: 0 };
 
     let settled = false;
@@ -74,7 +132,7 @@ export function open(url: string, connectionTimeoutMs: number): Promise<OpenResu
         return;
       }
       settled = true;
-      clearTimeout(timer);
+      cancelTimer();
       if (!result.ok) {
         sessions.delete(connectionId);
         socket.removeAllListeners();
@@ -85,27 +143,27 @@ export function open(url: string, connectionTimeoutMs: number): Promise<OpenResu
 
     // The connection is 'open' for test purposes once the info event is
     // buffered (ability contract, spec Section 6.2) — not merely on socket open.
-    const timer = setTimeout(() => {
+    const cancelTimer = deps.clock.setTimer(() => {
       settle({
         ok: false,
         reason: 'connect-timeout',
         message: `No connection + info event within ${connectionTimeoutMs} ms`,
-        elapsedMs: Date.now() - startedAt,
+        elapsedMs: deps.clock.now() - startedAt,
       });
     }, connectionTimeoutMs);
 
     socket.on('message', (raw) => {
       bufferFrame(session, raw);
       if (!settled && session.frames.some(({ frame }) => frameMatches(frame, { kind: 'event', event: 'info' }))) {
-        settle({ ok: true, connectionId, elapsedMs: Date.now() - startedAt });
+        settle({ ok: true, connectionId, elapsedMs: deps.clock.now() - startedAt });
       }
     });
     socket.on('error', (error) => {
       settle({
         ok: false,
         reason: 'connect-failure',
-        message: error.message,
-        elapsedMs: Date.now() - startedAt,
+        message: error instanceof Error ? error.message : String(error),
+        elapsedMs: deps.clock.now() - startedAt,
       });
     });
     socket.on('close', () => {
@@ -113,7 +171,7 @@ export function open(url: string, connectionTimeoutMs: number): Promise<OpenResu
         ok: false,
         reason: 'connect-failure',
         message: 'Socket closed before the info event arrived',
-        elapsedMs: Date.now() - startedAt,
+        elapsedMs: deps.clock.now() - startedAt,
       });
     });
 
@@ -150,7 +208,7 @@ export async function poll(
   const timeoutMs = options.timeoutMs ?? 10_000;
   const minCount = options.minCount ?? 1;
   const sinceIndex = options.sinceIndex ?? -1;
-  const deadline = Date.now() + timeoutMs;
+  const deadline = deps.clock.now() + timeoutMs;
 
   const matches = (): BufferedFrame[] =>
     session.frames.filter(
@@ -158,8 +216,8 @@ export async function poll(
     );
 
   let found = matches();
-  while (found.length < minCount && Date.now() < deadline) {
-    await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
+  while (found.length < minCount && deps.clock.now() < deadline) {
+    await deps.clock.sleep(POLL_INTERVAL_MS);
     found = matches();
   }
   return { frames: found, timedOut: found.length < minCount };
