@@ -70,7 +70,11 @@ buffer); layer 4 translates.
 
 ## How to run
 
-Requires Node 20+ (CI runs Node 24, per `.nvmrc`).
+Requires **Node 20+** (the supported minimum, `package.json#engines`); the
+development and CI baseline is **Node 24** (`.nvmrc`, `setup-node`). The static
+and unit gates run on the Node 20 floor; the branch-coverage gate needs
+Node ≥ 22.8 and runs on the CI baseline. See
+[ADR-009](docs/adr/ADR-009-node-support-baseline.md).
 
 ```sh
 npm ci
