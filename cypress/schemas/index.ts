@@ -21,6 +21,12 @@ export {
   type CandleFields,
   type SubscribedCandlesAck,
 } from './candlesChannel';
+export {
+  isBookChecksumFrame,
+  isHeartbeatFrame,
+  type BookChecksumFrame,
+  type HeartbeatFrame,
+} from './channelFrames';
 export { isConfEvent, type ConfEvent } from './confEvent';
 export { isSubscriptionErrorEvent, type SubscriptionErrorEvent } from './errorEvent';
 export { isPlatformInfoEvent, type PlatformInfoEvent } from './infoEvent';

@@ -1,6 +1,7 @@
 import { CommunicateOverWebSocket } from '../abilities/CommunicateOverWebSocket';
 import { TIMEOUTS } from '../../config';
 import { bookChecksum, foldBook } from '../../books';
+import { isBookChecksumFrame } from '../../../schemas';
 import { AssertionError, Question } from '../core';
 import { extractBookFrames } from './bookFolding';
 
@@ -39,12 +40,14 @@ export class ChecksumVerifications {
             .then((dataFrames): ChecksumVerification[] => {
               const log = extractBookFrames(dataFrames);
               return csFrames.slice(0, count).map((buffered) => {
-                const expected = Array.isArray(buffered.frame)
-                  ? (buffered.frame as unknown[])[2]
-                  : undefined;
-                if (typeof expected !== 'number' || !Number.isInteger(expected)) {
-                  throw new AssertionError('A checksum frame does not carry an integer checksum');
+                // Predicate selection already matched [chanId,'cs',...]; the guard
+                // validates the exact frame shape before we trust frame[2].
+                if (!isBookChecksumFrame(buffered.frame, chanId)) {
+                  throw new AssertionError(
+                    'A checksum frame does not match the [chanId, "cs", integer] schema',
+                  );
                 }
+                const expected = buffered.frame[2];
                 const book = foldBook(
                   log.snapshotLevels,
                   log.updates

@@ -1,6 +1,7 @@
 import { CommunicateOverWebSocket } from '../abilities/CommunicateOverWebSocket';
 import { TIMEOUTS } from '../../config';
-import { Question } from '../core';
+import { isHeartbeatFrame } from '../../../schemas';
+import { AssertionError, Question } from '../core';
 
 /**
  * heartbeat frames on a channel (spec Section 6.4) — [chanId,'hb'] every
@@ -19,7 +20,16 @@ export class HeartbeatsObservedOn {
             description: `${atLeast} heartbeat(s) on channel ${chanId}`,
           },
         )
-        .then((frames) => frames.length);
+        .then((frames) => {
+          // Predicate selection matched frame[1]==='hb'; the guard validates the
+          // exact [chanId,'hb'] shape (length, channel id) before we count it.
+          for (const buffered of frames) {
+            if (!isHeartbeatFrame(buffered.frame, chanId)) {
+              throw new AssertionError('A heartbeat frame does not match the [chanId, "hb"] schema');
+            }
+          }
+          return frames.length;
+        });
     });
   }
 }
