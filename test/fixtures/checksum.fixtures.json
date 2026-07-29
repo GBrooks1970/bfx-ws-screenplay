@@ -1,0 +1,41 @@
+{
+  "_meta": {
+    "purpose": "Language-neutral checksum contract for the Bitfinex order-book CRC (SPEC-004 / docs/adr/ADR-007-checksum-numeric-token-contract.md). A future implementation in any language can fold these levels and reproduce the exact wire string and signed 32-bit CRC-32.",
+    "source": "Algorithm: https://docs.bitfinex.com/docs/ws-websocket-checksum ; numeric-token contract: docs/adr/ADR-007-checksum-numeric-token-contract.md ; live probe 5 July 2026 (8/8 platform checksums reproduced).",
+    "recipe": "Apply each [price, count, amount] level (count>0 add/update, amount sign picks the side: bids>0). Take top 25 bids (price desc) and top 25 asks (price asc), interleave bid,ask,bid,ask..., serialise each as plainDecimal(price):plainDecimal(amount), join with ':', CRC-32 (poly 0xEDB88320), return signed 32-bit.",
+    "no_secrets": true
+  },
+  "cases": [
+    {
+      "name": "sub-tick two-level (exponent-form values exercise the plain-decimal token contract)",
+      "levels": [
+        [0.00000015, 1, 0.00000001],
+        [0.0000002, 1, -0.00000001]
+      ],
+      "expectedChecksumString": "0.00000015:0.00000001:0.0000002:-0.00000001",
+      "expectedCrc32Signed": -591028654
+    },
+    {
+      "name": "plain two-level (one bid, one ask)",
+      "levels": [
+        [64000.5, 1, 0.75],
+        [64010.25, 1, -0.5]
+      ],
+      "expectedChecksumString": "64000.5:0.75:64010.25:-0.5",
+      "expectedCrc32Signed": 942526109
+    },
+    {
+      "name": "three-per-side (proves interleave order: bids descending, asks ascending)",
+      "levels": [
+        [100, 1, 2],
+        [99, 1, 1.5],
+        [98, 2, 3],
+        [101, 1, -2],
+        [102, 1, -1.5],
+        [103, 2, -3]
+      ],
+      "expectedChecksumString": "100:2:101:-2:99:1.5:102:-1.5:98:3:103:-3",
+      "expectedCrc32Signed": -865465902
+    }
+  ]
+}

@@ -94,12 +94,18 @@ shim ([`test/unit/_all.test.ts`](test/unit/_all.test.ts)) loads every sibling
 `*.test.ts`, so the suite needs no glob support and runs identically on the Node
 20 floor and CI's Node 24.
 
-`npm run test:unit:coverage` additionally enforces a **≥70 % branch-coverage
-floor** over the critical pure modules (`orderBook`, `crc32`, `invariants`,
-`tradeStreamDiagnostics`) and is the gate CI runs before every Cypress suite. It
-uses Node's `--test-coverage-*` flags, which require the **Node 24 CI baseline**
-(Node ≥ 22.8); on the Node 20 floor use `npm run test:unit`, which reports and
-runs everywhere.
+`npm run test:unit:coverage` additionally enforces a **≥80 % branch-coverage
+floor** over the critical pure surface — the predicate matcher, every message
+schema guard, the book maintenance/checksum/invariant modules, the error
+taxonomy, and the trade-stream classifier — and is the gate CI runs before every
+Cypress suite. It uses Node's `--test-coverage-*` flags, which require the
+**Node 24 CI baseline** (Node ≥ 22.8); on the Node 20 floor use `npm run
+test:unit`, which reports and runs everywhere.
+
+Representative protocol frames and the checksum contract are pinned as
+**language-neutral JSON fixtures** in [`test/fixtures/`](test/fixtures) — traceable
+to the Bitfinex docs and dated live probes, no secrets — so a future
+implementation in any language can reproduce the same expected results.
 
 The flagship assertion (SPEC-004): a locally maintained order-book replica must match the
 platform's own CRC-32 checksum frames five times consecutively — folded with buffer-index

@@ -24,7 +24,7 @@
     "typecheck": "tsc --noEmit",
     "audit:ci": "npm audit --audit-level=high",
     "test:unit": "node --import tsx --test test/unit/_all.test.ts",
-    "test:unit:coverage": "node --import tsx --test --experimental-test-coverage --test-coverage-include=cypress/support/books/orderBook.ts --test-coverage-include=cypress/support/books/crc32.ts --test-coverage-include=cypress/support/books/invariants.ts --test-coverage-include=cypress/support/screenplay/trades/tradeStreamDiagnostics.ts --test-coverage-branches=70 test/unit/_all.test.ts",
+    "test:unit:coverage": "node --import tsx --test --experimental-test-coverage --test-coverage-include=node-driver/predicates.ts --test-coverage-include=cypress/schemas/** --test-coverage-include=cypress/support/books/** --test-coverage-include=cypress/support/screenplay/trades/tradeStreamDiagnostics.ts --test-coverage-include=cypress/support/screenplay/core/errors.ts --test-coverage-branches=80 test/unit/_all.test.ts",
     "check:pure": "npm run test:unit"
   },
   "devDependencies": {

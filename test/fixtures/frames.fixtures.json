@@ -1,0 +1,35 @@
+{
+  "_meta": {
+    "purpose": "Representative Bitfinex WS v2 public frames (language-neutral) for reuse by future implementations and by this project's schema/predicate unit tests. Each frame is a valid capture of the documented shape.",
+    "source": "https://docs.bitfinex.com/docs/ws-general , /reference/ws-public-ticker , /reference/ws-public-trades , /reference/ws-public-candles , /reference/ws-public-books , /docs/ws-config ; verified 4-20 July 2026 with live probes.",
+    "no_secrets": true
+  },
+  "events": {
+    "infoOperative": { "event": "info", "version": 2, "platform": { "status": 1 } },
+    "infoMaintenance": { "event": "info", "version": 2, "platform": { "status": 0 } },
+    "pong": { "event": "pong", "ts": 1511545528111, "cid": 1234 },
+    "conf": { "event": "conf", "status": "OK" },
+    "subscribedTrades": { "event": "subscribed", "channel": "trades", "chanId": 17, "symbol": "tBTCUSD", "pair": "BTCUSD" },
+    "subscribedTicker": { "event": "subscribed", "channel": "ticker", "chanId": 4, "symbol": "tBTCUSD", "pair": "BTCUSD" },
+    "subscribedBook": { "event": "subscribed", "channel": "book", "chanId": 1, "symbol": "tBTCUSD", "pair": "BTCUSD", "prec": "P0", "freq": "F0", "len": "25" },
+    "subscribedCandles": { "event": "subscribed", "channel": "candles", "chanId": 5, "key": "trade:1m:tBTCUSD" },
+    "unsubscribed": { "event": "unsubscribed", "status": "OK", "chanId": 17 },
+    "errorBadSymbol": { "channel": "trades", "symbol": "tFAKEPAIRXYZ", "event": "error", "msg": "symbol: invalid", "code": 10300, "pair": "FAKEPAIRXYZ" },
+    "errorBadChannel": { "channel": "bogus-channel", "event": "error", "msg": "channel: unknown", "code": 10300 }
+  },
+  "payloads": {
+    "trade": [588750488, 1751731200000, 0.01, 62696],
+    "tickerTenField": [62673, 1.74617776, 62700, 1.18670422, 145, 0.00231811, 62696, 830.62483022, 63487, 62450],
+    "tickerWithTrailingNull": [62673, 1.74617776, 62700, 1.18670422, 145, 0.00231811, 62696, 830.62483022, 63487, 62450, null],
+    "candle1m": [1751731200000, 62600, 62696, 62710, 62580, 12.5],
+    "bookLevelBid": [64000.5, 1, 0.75],
+    "bookLevelAsk": [64010.25, 1, -0.5],
+    "bookLevelRemove": [64000.5, 0, 1]
+  },
+  "channelFrames": {
+    "tradeExecuted": [17, "te", [588750488, 1751731200000, 0.01, 62696]],
+    "tradeUpdate": [17, "tu", [588750488, 1751731200000, 0.01, 62696]],
+    "heartbeat": [17, "hb"],
+    "checksum": [1, "cs", -591028654]
+  }
+}
