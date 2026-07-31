@@ -8,9 +8,9 @@
 
 # bfx-ws-screenplay — Backlog
 
-**Version:** 10 — code reviews v1 (Risks #2–#8), v2 (Risks #1–#6) and v3 (Codex GPT-5 →
-CODEX-01..10) findings resolved via WORKLIST_bfx-ws-screenplay.md
-**Last Updated:** 2026-07-29
+**Version:** 11 — code reviews v1 (Risks #2–#8), v2 (Risks #1–#6) and v3 (Codex GPT-5 →
+CODEX-01..10) findings resolved via WORKLIST_bfx-ws-screenplay.md; v3 PR range reconciled
+**Last Updated:** 2026-07-31
 **Based on:** `SPECIFICATION.md` (normative design spec), the SPEC-001..006 review packs (approved
 4–5 July 2026), code review v1 (`.review/CODE_REVIEW_CLAUDE_Fable_5_v1_20260706T1039Z/`,
 2026-07-06 — no HIGH findings), remediated by BFX-01..07 on
@@ -20,7 +20,7 @@ findings), remediated by TRIAGE-01..06 on PRs
 [#11](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/11)–[#16](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/16),
 merged 2026-07-20, and code review v3 (`.review/CODE_REVIEW_CODEX_v1_20260724T0002Z/`, Codex
 GPT-5, 2026-07-24 — one HIGH, since resolved), remediated by CODEX-01..10 on PRs
-[#19](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/19)–[#27](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/27),
+[#19](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/19)–[#28](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/28),
 merged 2026-07-28/29
 
 This backlog tracks the SPEC-unit roadmap and any risks against it; ordering follows the
@@ -79,7 +79,7 @@ trio together, re-run all gates plus one live `@extended` run.
 #### Code review v3 (Codex GPT-5) — CODEX-01..10 ✅ Resolved 2026-07-28/29
 
 **Resolution:** All ten findings from `.review/CODE_REVIEW_CODEX_v1_20260724T0002Z/` remediated on
-PRs #19–#27 (details per item in `WORKLIST_bfx-ws-screenplay.md`): **CODEX-01/02** — checksum
+PRs #19–#28 (details per item in `WORKLIST_bfx-ws-screenplay.md`): **CODEX-01/02** — checksum
 numeric-token contract (ADR-007) + deterministic exponent→plain-decimal serialiser; **CODEX-03** —
 trade-starvation classified as environment-blocked (ADR-008), malformed/pairing/socket faults stay
 loud; **CODEX-04** — two transitive HIGH advisories cleared (`brace-expansion` 5.0.8, `postcss`
@@ -89,7 +89,7 @@ the pure surface, language-neutral JSON fixtures, and an injected socket/clock s
 deterministic driver-lifecycle tests; **CODEX-08** — exact `isBookChecksumFrame`/`isHeartbeatFrame`
 guards (live SPEC-004/006 confirmed); **CODEX-09** — Node floor (20) vs CI baseline (24)
 reconciled (ADR-009). `npm audit` = 0; the one HIGH (audit) and all MEDIUM/LOW findings are closed.
-**See:** review v3 pack; PRs [#19](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/19)–[#27](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/27).
+**See:** review v3 pack; PRs [#19](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/19)–[#28](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/28).
 
 #### Risk #2 (review #1): Checksum string can diverge from the wire for exponent-notation magnitudes ✅ Resolved 2026-07-17
 
@@ -218,7 +218,7 @@ consecutive green runs prove no breakage.
 | MEDIUM (10–19) | 0 | — | — |
 | LOW (0–9) | 1 | ~1 hr per deliberate upgrade | READY TO START (Risk #1 pinned-trio drift — recurring maintenance, unrelated to any review) |
 | **Total Outstanding** | **1** | recurring | |
-| Resolved | 24 | | 7 via PR #9 (review v1) + 6 via PRs #11–#16 (review v2) + 10 via PRs #19–#27 (review v3, CODEX-01..10) + 1 prior |
+| Resolved | 24 | | 7 via PR #9 (review v1) + 6 via PRs #11–#16 (review v2) + 10 via PRs #19–#28 (review v3, CODEX-01..10) + 1 prior |
 
 ---
 
@@ -294,7 +294,7 @@ feature file → **Gary's review** → implement → three consecutive green run
 | Done | HIGH | SPEC-002..006 (full in-scope roadmap) | ~13 hrs actual | 2026-07-04 | 2026-07-06 |
 | Done | MEDIUM+LOW | Review v1 findings: Risks #2–#8 (BFX-01..07, PR #9, merged) | ~5.5 hrs | 2026-07-17 | 2026-07-17 |
 | Done | MEDIUM+LOW | Review v2 findings: Risks #1–#6 (TRIAGE-01..06, PRs #11–#16, merged) | ~2 hrs | 2026-07-20 | 2026-07-20 |
-| Done | HIGH+MEDIUM+LOW | Review v3 (Codex GPT-5): CODEX-01..10 (PRs #19–#27, merged) | ~10 hrs | 2026-07-28 | 2026-07-29 |
+| Done | HIGH+MEDIUM+LOW | Review v3 (Codex GPT-5): CODEX-01..10 (PRs #19–#28, merged) | ~10 hrs | 2026-07-28 | 2026-07-29 |
 | Later | — | SPEC-007 stretch (deferred, disposition recorded 2026-07-29); Risk #1 pinned-trio maintenance (recurring) | — | TBD | TBD |
 
 ---
