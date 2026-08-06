@@ -1,8 +1,9 @@
 import { CommunicateOverWebSocket } from '../abilities/CommunicateOverWebSocket';
-import { TIMEOUTS } from '../../config';
+import { SYMBOLS, TIMEOUTS } from '../../config';
 import { bookChecksum, foldBook } from '../../books';
 import { isBookChecksumFrame } from '../../../schemas';
 import { AssertionError, Question } from '../core';
+import { onChannelObservationTimeout } from '../streams';
 import { extractBookFrames } from './bookFolding';
 
 export type ChecksumVerification = {
@@ -29,6 +30,21 @@ export class ChecksumVerifications {
             minCount: count,
             timeoutMs: TIMEOUTS.updateWaitMs,
             description: `${count} checksum frame(s)`,
+            // ADR-010: cs frames follow book activity, so a quiet book delivers
+            // fewer than `count` within the window — an environment outcome.
+            // quietFloor 1 is load-bearing: *zero* cs frames while the book
+            // streams means the conf flag was never honoured, and that stays a
+            // loud product failure rather than being excused as market quiet.
+            onTimeout: onChannelObservationTimeout({
+              chanId,
+              channel: 'book',
+              symbol: SYMBOLS.primary,
+              awaited: `${count} checksum frame(s)`,
+              timeoutMs: TIMEOUTS.updateWaitMs,
+              requiredCount: count,
+              quietFloor: 1,
+              countedFrames: { kind: 'channel', chanId, label: 'cs' },
+            }),
           },
         )
         .then((csFrames) =>
