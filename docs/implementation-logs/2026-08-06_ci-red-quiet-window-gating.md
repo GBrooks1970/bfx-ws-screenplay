@@ -52,14 +52,26 @@ Local, Node v22.22.2, branch `claude/bfx-ws-screenplay-ci-red-qy33n4`:
 | TypeScript | `environmentBlockedGate.ts` coverage | — | 90.91% line / **89.58% branch** | ✅ PASS |
 | TypeScript | `tsc --noEmit` (`typecheck`) | green | green | ✅ PASS |
 | TypeScript | `eslint .` (`lint`) | green | green | ✅ PASS |
-| Cypress (live) | `@smoke` / `@extended` | — | **not run** — see below | ⏸️ DEFERRED |
+| Cypress (live) | `@extended` on `main` @ `c5e2695` (dispatched run #31126673546) | — | **23/23 passing**, run green | ✅ PASS |
+| Cypress (live) | The gate's *excusing* path, live | — | **not exercised** — no quiet window occurred | ⏸️ UNPROVEN |
 
-**The live Cypress suites could not be run in this session.** The sandbox proxy blocks the
+**The live Cypress suites could not be run *locally* in this session.** The sandbox proxy blocks the
 Cypress browser-binary download (`ECONNRESET` on the `cypress install` postinstall); dependencies
 were installed with `CYPRESS_INSTALL_BINARY=0`, which is sufficient for typecheck, lint and the
-`node:test` suite but not for a browser run. The pure logic therefore carries the entire
-correctness proof for this change, and the wiring gets its first real exercise on PR #32's `smoke`
-job and the next nightly.
+`node:test` suite but not for a browser run.
+
+Since PR #32 merged with no CI, an `@extended` run was **dispatched manually against `main`**
+(#31126673546, `c5e2695`) to close that gap. It passed 23/23 in 1:38. That result proves:
+
+- the new `scripts/run-suite.ts` wrapper drives Cypress correctly in CI and propagates a clean exit
+  — the module-API invocation was a real risk, since it replaced a plain `cypress run`;
+- the new `onTimeout` classifiers on ticker, candles and book checksums **do not misfire** when
+  frames do arrive — every one of those waits resolved normally.
+
+It does **not** prove the gate excuses a quiet market in production. The market was busy at 19:10
+UTC (SPEC-002 in 12 s, SPEC-003 in 19 s), so no window starved and the gate had nothing to excuse —
+it correctly printed nothing and passed through. **The excusing path remains unexercised live** and
+will stay so until a genuinely quiet window occurs. Until then the unit suite is its only proof.
 
 Both real failures were replayed through the gate as a substitute end-to-end check:
 
@@ -215,11 +227,21 @@ precedent that a pure decision module is not done until it is in the gate.
 
 ## Recommendations / Next Steps
 
-- [ ] **Verify the post-merge `push` run on `main`.** PR #32 was merged before Actions scheduled its
-      `smoke` job, so the change landed with no live verification at all. The `smoke` job includes
-      SPEC-002's ticker update scenario — the exact wait that failed on 4 August — making that
-      post-merge run the first real exercise of both the classification and the gate. If it is red,
-      `main` is red on this change. — *high*
+- [x] ~~Verify the merged change live.~~ **Done** — dispatched `@extended` run #31126673546 on
+      `c5e2695` passed 23/23. `main` is not broken by this change.
+- [ ] **Confirm the gate's excusing path on a real quiet window.** The one thing still unproven
+      live: run #31126673546 hit a busy market, so nothing starved and the gate never had to excuse
+      anything. Watch for the first nightly that would previously have gone red and confirm it now
+      passes *with* the `environment-blocked gate (ADR-010)` summary block in the log. Until that is
+      seen, the excusing path rests on unit tests alone. — *high*
+- [ ] **Investigate why no `push`/`pull_request` run was scheduled.** No workflow run was created for
+      PR #32 opening, the merge push to `main`, or PR #33 opening, over roughly an hour — while a
+      manual `workflow_dispatch` ran immediately. The pushes to the feature branch correctly produced
+      no run (`push` is filtered to `branches: [main]`), but the other three are unexplained. Leading
+      hypothesis: events originating from a GitHub App token do not spawn workflow runs, which would
+      cover the two PR openings. Check Settings → Actions → General. Until this is understood, **no
+      PR in this repo is actually being tested** — a larger exposure than the bug this session
+      fixed. — *high*
 - [ ] **Consider requiring `smoke` to pass before merge.** This session's change reached `main` on
       local gates alone because the PR was merged inside the CI scheduling window. A required check
       on `smoke` would close that hole — and is more valuable now that the gate makes `smoke`
