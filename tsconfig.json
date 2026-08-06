@@ -13,5 +13,11 @@
     "noEmit": true,
     "types": ["cypress", "node"]
   },
-  "include": ["cypress/**/*.ts", "node-driver/**/*.ts", "test/**/*.ts", "cypress.config.ts"]
+  "include": [
+    "cypress/**/*.ts",
+    "node-driver/**/*.ts",
+    "scripts/**/*.ts",
+    "test/**/*.ts",
+    "cypress.config.ts"
+  ]
 }

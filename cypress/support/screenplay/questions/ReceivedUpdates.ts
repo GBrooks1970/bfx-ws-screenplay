@@ -9,6 +9,7 @@ import {
   type TradeFields,
 } from '../../../schemas';
 import { AssertionError, Question } from '../core';
+import { onChannelObservationTimeout } from '../streams';
 import { onTradeObservationTimeout } from '../trades';
 import type { ObservedExecution } from '../tasks/ObserveAnExecutedTrade';
 
@@ -35,6 +36,18 @@ export class ReceivedUpdates {
             minCount: atLeast + 1,
             timeoutMs: TIMEOUTS.updateWaitMs,
             description: `${atLeast} ticker update(s) after the snapshot`,
+            // ADR-010: a quiet minute legitimately pushes no ticker update, so a
+            // bare timeout here is classified rather than failed. quietFloor 0 —
+            // zero updates is plausible; a missing snapshot stays a product failure.
+            onTimeout: onChannelObservationTimeout({
+              chanId,
+              channel: 'ticker',
+              symbol: SYMBOLS.primary,
+              awaited: `${atLeast} ticker update(s) after the snapshot`,
+              timeoutMs: TIMEOUTS.updateWaitMs,
+              requiredCount: atLeast,
+              quietFloor: 0,
+            }),
           },
         )
         .then((frames): TickerFields[] =>
@@ -92,6 +105,17 @@ export class ReceivedUpdates {
             minCount: atLeast + 1, // + the snapshot frame
             timeoutMs: TIMEOUTS.candleUpdateWaitMs,
             description: `${atLeast} candle update(s) after the snapshot`,
+            // ADR-010: the candle window is the same shape as the ticker's — a
+            // quiet minute ticks no candle. Classified for the same reason.
+            onTimeout: onChannelObservationTimeout({
+              chanId,
+              channel: 'candles',
+              symbol: SYMBOLS.primary,
+              awaited: `${atLeast} candle update(s) after the snapshot`,
+              timeoutMs: TIMEOUTS.candleUpdateWaitMs,
+              requiredCount: atLeast,
+              quietFloor: 0,
+            }),
           },
         )
         .then((frames): CandleFields[] =>

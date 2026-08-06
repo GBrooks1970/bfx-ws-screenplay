@@ -15,7 +15,9 @@ npm run test:smoke
   assumption.
 - **`npm run test:smoke` hits the live public API** (`wss://api-pub.bitfinex.com/ws/2`). A
   scenario aborted by `EnvironmentBlockedError` (`environment-blocked:` message prefix) means
-  platform maintenance, **not** a product failure — do not "fix" the framework for it.
+  platform maintenance or a quiet market, **not** a product failure — do not "fix" the
+  framework for it. Both suites run through `scripts/run-suite.ts`, which passes a run whose
+  *only* failures carry that marker and keeps anything else red (ADR-010).
 - **Live-API etiquette:** `@smoke` on push only; the full `@extended` suite runs nightly in CI;
   one connection per scenario, torn down unconditionally in the `After` hook.
 - **Exact version pins** for the `cypress` / `@badeball/cypress-cucumber-preprocessor` /

@@ -82,11 +82,27 @@ live dispatch confirms wiring.
 
 ## Consequences
 
+> **Extended by [ADR-010](./ADR-010-quiet-window-classification-and-gating.md)
+> (6 August 2026)** on both of the points below. The classification was correct;
+> its two stated consequences were not yet true in the build.
+
 - Quiet-market nightlies like #30189796150 now report an explained,
   distinguishable environment outcome instead of a red product failure.
+
+  ADR-010: half true as written. The *report* explained itself, but nothing
+  consumed the marker — `cypress run` still counted the thrown error as a
+  failing test and exited non-zero, so the branch still went red. Nightly
+  #31068372818 failed on precisely this outcome. ADR-010 adds the build gate
+  that honours the marker.
 - One new diagnostic primitive (`CommunicateOverWebSocket.peek`, a non-blocking
   buffer read) and one new pure module are added; no existing wait semantics
   change for non-trades channels.
 - Ticker (SPEC-002) and candle (SPEC-005) "at least one update" waits are **not**
   reclassified here — they are lower-risk and out of the review's scope — but the
   same pattern could extend to them if a future quiet-window failure warrants it.
+
+  ADR-010: it warranted it. Nightly #30953031343 failed on a ticker update
+  window and #30686140556 on a book-checksum window, both as bare
+  `AssertionError`s indistinguishable from real regressions. Ticker, candles and
+  book checksums are now classified through the generalised
+  `classifyChannelWindow`.

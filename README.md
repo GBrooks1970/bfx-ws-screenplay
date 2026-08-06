@@ -55,6 +55,7 @@ buffer); layer 4 translates.
 | [ADR-004](docs/adr/ADR-004-assertion-strategy-live-data.md) | Protocol/schema/invariant assertions only — market-value equality prohibited |
 | [ADR-005](docs/adr/ADR-005-time-and-flake-policy.md) | Bounded condition-waits with named timeout constants; no fixed sleeps; distinct environment-blocked outcome |
 | [ADR-006](docs/adr/ADR-006-book-depth-transient-overshoot-margin.md) | Book-depth purity check allows a documented one-frame transient overshoot (25 subscribed / 30 allowed) |
+| [ADR-010](docs/adr/ADR-010-quiet-window-classification-and-gating.md) | Quiet-window classification on every channel, and the build gate that passes a run whose only failures are environment-blocked |
 
 ## Specification progress
 
@@ -91,8 +92,9 @@ npm run audit:ci        # dependency-audit gate (see docs/dependency-audit-polic
 `npm run test:unit` runs the pure-logic suite in [`test/unit/`](test/unit) on
 Node's built-in `node:test` runner via `tsx` — **no new dependencies, no
 network, no browser**. It covers the checksum serialiser (SPEC-004 / ADR-007),
-the book diagnostic projection, and the trade-starvation classifier
-(ADR-008); these tests were migrated from the earlier `scripts/check-*.ts` proof
+the book diagnostic projection, the trade-starvation classifier (ADR-008), the
+generalised quiet-window classifier and the environment-blocked build gate
+(ADR-010); these tests were migrated from the earlier `scripts/check-*.ts` proof
 scripts, and `npm run check:pure` is retained as a thin alias. A small discovery
 shim ([`test/unit/_all.test.ts`](test/unit/_all.test.ts)) loads every sibling
 `*.test.ts`, so the suite needs no glob support and runs identically on the Node
@@ -117,9 +119,17 @@ platform's own CRC-32 checksum frames five times consecutively — folded with b
 determinism, so each checksum is compared against exactly the updates that preceded it.
 
 Cucumber HTML/JSON reports are written to `reports/` (published as CI
-artefacts). Scenarios blocked by platform maintenance abort as
+artefacts). Scenarios blocked by platform maintenance — or by a quiet market
+that delivered no frame inside a bounded window — abort as
 **environment-blocked** (`EnvironmentBlockedError`), distinguishable in the
 report from product failures.
+
+Both suites run through [`scripts/run-suite.ts`](scripts/run-suite.ts), which
+applies that distinction to the **build**: a run whose only failures are
+environment-blocked passes, while a single product failure alongside them keeps
+it red (ADR-010). Every excused scenario is printed with its diagnostic before
+the build passes, so a permanently quiet channel stays visible rather than
+silently green.
 
 ### Live-API etiquette
 

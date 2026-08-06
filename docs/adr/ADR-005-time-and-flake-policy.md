@@ -22,3 +22,11 @@ with an explicit timeout constant in one configuration module
   malformed/mis-paired frame, an unacknowledged subscription, a missing
   snapshot or a socket fault stays a loud product failure. See
   [ADR-008](./ADR-008-trade-starvation-classification.md).
+- The same classification now applies to every other bounded "at least N frames"
+  window — ticker, candles and book checksums — and an environment-blocked
+  outcome no longer fails the build: the suite runs through a gate that passes a
+  run whose *only* failures carry the marker, while any product failure
+  alongside one still turns the build red. See
+  [ADR-010](./ADR-010-quiet-window-classification-and-gating.md).
+- **Still no blind retries.** A quiet market is classified and reported, never
+  re-rolled; every wait remains a single bounded condition-wait.
