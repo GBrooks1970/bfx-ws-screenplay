@@ -8,9 +8,8 @@
 
 # bfx-ws-screenplay — Backlog
 
-**Version:** 11 — code reviews v1 (Risks #2–#8), v2 (Risks #1–#6) and v3 (Codex GPT-5 →
-CODEX-01..10) findings resolved via WORKLIST_bfx-ws-screenplay.md; v3 PR range reconciled
-**Last Updated:** 2026-07-31
+**Version:** 12 — js-yaml High-severity advisory (CVE-2026-59870 / GHSA-5p4m-2wfm-xmqj) remediated via root override on PR #34 (2026-08-07); post-merge main CI green
+**Last Updated:** 2026-08-07
 **Based on:** `SPECIFICATION.md` (normative design spec), the SPEC-001..006 review packs (approved
 4–5 July 2026), code review v1 (`.review/CODE_REVIEW_CLAUDE_Fable_5_v1_20260706T1039Z/`,
 2026-07-06 — no HIGH findings), remediated by BFX-01..07 on
@@ -76,7 +75,10 @@ trio together, re-run all gates plus one live `@extended` run.
 
 ### Resolved Risks
 
-#### Code review v3 (Codex GPT-5) — CODEX-01..10 ✅ Resolved 2026-07-28/29
+#### `js-yaml` High-severity advisory (CVE-2026-59870 / GHSA-5p4m-2wfm-xmqj) ✅ Resolved 2026-08-07
+
+**Resolution:** Root npm override `"js-yaml": "^4.3.1"` added in `package.json`; `package-lock.json` updated; `npm audit:ci` verified zero vulnerabilities. Merged via PR #34 (`22c56d7`); post-merge `main` CI run 31184217398 green across all steps.
+**See:** commit `22c56d7`, PR #34.
 
 **Resolution:** All ten findings from `.review/CODE_REVIEW_CODEX_v1_20260724T0002Z/` remediated on
 PRs #19–#28 (details per item in `WORKLIST_bfx-ws-screenplay.md`): **CODEX-01/02** — checksum
