@@ -1,7 +1,7 @@
 # Cross-Cutting Analysis
 
 **Project:** bfx-ws-screenplay
-**Reviewer:** AI assistant (CLAUDE_3_5_SONNET)
+**Reviewer:** AI assistant (Gemini)
 **Date:** 2026-08-07T14:10Z
 
 *Note: As a single-repository review, this cross-cutting analysis evaluates internal layer interactions (Test Suite vs. Driver vs. Schemas vs. CI Infrastructure vs. Documentation).*

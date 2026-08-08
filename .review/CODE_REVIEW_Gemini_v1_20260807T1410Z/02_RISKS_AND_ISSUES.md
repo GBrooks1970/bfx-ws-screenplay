@@ -1,7 +1,7 @@
 # Risks and Issues
 
 **Project:** bfx-ws-screenplay
-**Reviewer:** AI assistant (CLAUDE_3_5_SONNET)
+**Reviewer:** AI assistant (Gemini)
 **Date:** 2026-08-07T14:10Z
 
 The findings below are ordered from highest to lowest severity.
