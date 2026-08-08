@@ -1,10 +1,10 @@
 # Code Review: bfx-ws-screenplay
 
-**Reviewer:** AI assistant (CLAUDE_3_5_SONNET)
+**Reviewer:** AI assistant (Gemini)
 **Date:** 2026-08-07T14:10Z
 **Scope:** Full repository review against `docs/backlog.md` v12 and normative `SPECIFICATION.md`
 **Baseline:** `main` @ `22c56d7`
-**Review version:** CLAUDE_3_5_SONNET v1
+**Review version:** Gemini v1
 
 ## Table of Contents
 

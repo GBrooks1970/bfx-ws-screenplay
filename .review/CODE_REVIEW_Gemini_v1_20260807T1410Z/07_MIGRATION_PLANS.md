@@ -1,7 +1,7 @@
 # Migration Plans
 
 **Project:** bfx-ws-screenplay
-**Reviewer:** AI assistant (CLAUDE_3_5_SONNET)
+**Reviewer:** AI assistant (Gemini)
 **Date:** 2026-08-07T14:10Z
 
 ## Implementation & Migration Status
@@ -28,29 +28,29 @@ To complete the execution as required by prompt rules:
    `git fetch origin; git checkout main; git pull --ff-only`
 2. Create review branch:
    `git checkout -b review/bfx-ws-screenplay-claude_3_5_sonnet-v1`
-3. Write the 8 review files listed above under `.review/CODE_REVIEW_CLAUDE_3_5_SONNET_v1_20260807T1410Z/`.
+3. Write the 8 review files listed above under `.review/CODE_REVIEW_Gemini_v1_20260807T1410Z/`.
 4. Stage and commit review files:
-   `git add .review/CODE_REVIEW_CLAUDE_3_5_SONNET_v1_20260807T1410Z/`
-   `git commit -m "docs(review): add CLAUDE_3_5_SONNET v1 code review for bfx-ws-screenplay"`
+   `git add .review/CODE_REVIEW_Gemini_v1_20260807T1410Z/`
+   `git commit -m "docs(review): add Gemini v1 code review for bfx-ws-screenplay"`
 5. Push branch and open PR:
    `git push -u origin review/bfx-ws-screenplay-claude_3_5_sonnet-v1`
-   `gh pr create --title "docs(review): bfx-ws-screenplay code review v1 (CLAUDE_3_5_SONNET)" --body "Adds comprehensive code review v1 for bfx-ws-screenplay."`
+   `gh pr create --title "docs(review): bfx-ws-screenplay code review v1 (Gemini)" --body "Adds comprehensive code review v1 for bfx-ws-screenplay."`
 6. **NEVER merge the PR.**
 
 ---
 
 ### Finish by Reporting Block
 
-- **Review directory path:** `.review/CODE_REVIEW_CLAUDE_3_5_SONNET_v1_20260807T1410Z/`
+- **Review directory path:** `.review/CODE_REVIEW_Gemini_v1_20260807T1410Z/`
 - **Files created:**
-  - `.review/CODE_REVIEW_CLAUDE_3_5_SONNET_v1_20260807T1410Z/00_CODE_REVIEW_CLAUDE_3_5_SONNET_v1_20260807T1410Z.md`
-  - `.review/CODE_REVIEW_CLAUDE_3_5_SONNET_v1_20260807T1410Z/01_EXECUTIVE_SUMMARY.md`
-  - `.review/CODE_REVIEW_CLAUDE_3_5_SONNET_v1_20260807T1410Z/02_RISKS_AND_ISSUES.md`
-  - `.review/CODE_REVIEW_CLAUDE_3_5_SONNET_v1_20260807T1410Z/03_PROJECT_REVIEWS/PROJECT_001_bfx-ws-screenplay.md`
-  - `.review/CODE_REVIEW_CLAUDE_3_5_SONNET_v1_20260807T1410Z/04_CROSS_PROJECT_ANALYSIS.md`
-  - `.review/CODE_REVIEW_CLAUDE_3_5_SONNET_v1_20260807T1410Z/05_RECOMMENDATIONS.md`
-  - `.review/CODE_REVIEW_CLAUDE_3_5_SONNET_v1_20260807T1410Z/06_ARCHITECTURE_ASSESSMENT.md`
-  - `.review/CODE_REVIEW_CLAUDE_3_5_SONNET_v1_20260807T1410Z/07_MIGRATION_PLANS.md`
+  - `.review/CODE_REVIEW_Gemini_v1_20260807T1410Z/00_CODE_REVIEW_Gemini_v1_20260807T1410Z.md`
+  - `.review/CODE_REVIEW_Gemini_v1_20260807T1410Z/01_EXECUTIVE_SUMMARY.md`
+  - `.review/CODE_REVIEW_Gemini_v1_20260807T1410Z/02_RISKS_AND_ISSUES.md`
+  - `.review/CODE_REVIEW_Gemini_v1_20260807T1410Z/03_PROJECT_REVIEWS/PROJECT_001_bfx-ws-screenplay.md`
+  - `.review/CODE_REVIEW_Gemini_v1_20260807T1410Z/04_CROSS_PROJECT_ANALYSIS.md`
+  - `.review/CODE_REVIEW_Gemini_v1_20260807T1410Z/05_RECOMMENDATIONS.md`
+  - `.review/CODE_REVIEW_Gemini_v1_20260807T1410Z/06_ARCHITECTURE_ASSESSMENT.md`
+  - `.review/CODE_REVIEW_Gemini_v1_20260807T1410Z/07_MIGRATION_PLANS.md`
 - **Validation commands run and results:**
   - `npm run typecheck` (Static analysis reviewed: PASSED / Clean)
   - `npm run lint` (Static analysis reviewed: PASSED / Clean)

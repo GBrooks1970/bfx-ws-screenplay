@@ -1,6 +1,6 @@
 # Project Review: bfx-ws-screenplay
 
-**Reviewer:** AI assistant (CLAUDE_3_5_SONNET)
+**Reviewer:** AI assistant (Gemini)
 **Date:** 2026-08-07T14:10Z
 
 ## Project Overview
