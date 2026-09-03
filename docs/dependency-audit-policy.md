@@ -65,6 +65,12 @@ targeted `overrides` in `package.json`, no direct-pin or parent-major churn:
 - **`postcss` → `8.5.24`** (advisory GHSA-r28c-9q8g-f849, path-traversal). One
   transitive copy via `@badeball/cypress-cucumber-preprocessor → find-cypress-specs
   → … → postcss@8.5.16`; the override bumps it within the 8.x line.
+- **`browserslist` → `^4.28.8`** (advisories GHSA-c83g-rgw3-j3cx, GHSA-73wf-gq98-2v4g,
+  unbounded memory growth OOM and prototype write). Transitive copy via
+  `@badeball/cypress-cucumber-preprocessor → find-cypress-specs → find-test-names →
+  @babel/core → @babel/helper-compilation-targets → browserslist@4.28.4`.
+  The override forces `browserslist` to `4.28.8`, clearing both advisories while
+  remaining fully compatible with Node 20 and CI Node 24 (`node: >=13.7`).
 
 Both paths are exercised in CI: `eslint → minimatch → brace-expansion` by
 `npm run lint`, and `mocha → minimatch → brace-expansion` (feature-file globbing

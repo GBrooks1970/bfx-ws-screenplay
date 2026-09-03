@@ -8,8 +8,8 @@
 
 # bfx-ws-screenplay — Backlog
 
-**Version:** 12 — js-yaml High-severity advisory (CVE-2026-59870 / GHSA-5p4m-2wfm-xmqj) remediated via root override on PR #34 (2026-08-07); post-merge main CI green
-**Last Updated:** 2026-08-07
+**Version:** 13 — browserslist High-severity advisories (GHSA-c83g-rgw3-j3cx / GHSA-73wf-gq98-2v4g) remediated via root override to ^4.28.8 on PR (2026-09-03); audit gate and main CI restored to green
+**Last Updated:** 2026-09-03
 **Based on:** `SPECIFICATION.md` (normative design spec), the SPEC-001..006 review packs (approved
 4–5 July 2026), code review v1 (`.review/CODE_REVIEW_CLAUDE_Fable_5_v1_20260706T1039Z/`,
 2026-07-06 — no HIGH findings), remediated by BFX-01..07 on
