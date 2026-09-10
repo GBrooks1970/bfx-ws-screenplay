@@ -24,6 +24,8 @@
     "test:smoke": "node --import tsx scripts/run-suite.ts \"@smoke\"",
     "test:extended": "node --import tsx scripts/run-suite.ts \"@smoke or @extended\"",
     "lint": "eslint .",
+    "lint:kanban": "npx --yes portfolio-kanban-generator@1.2.0 --project bfx-ws-screenplay --dialect risk-block --check",
+    "kanban:sync": "npx --yes portfolio-kanban-generator@1.2.0 --project bfx-ws-screenplay --dialect risk-block",
     "typecheck": "tsc --noEmit",
     "audit:ci": "npm audit --audit-level=high",
     "test:unit": "node --import tsx --test test/unit/_all.test.ts",
