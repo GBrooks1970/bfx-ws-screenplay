@@ -43,6 +43,13 @@ jobs:
       - run: npm run audit:ci
       - run: npm run typecheck
       - run: npm run lint
+      # Board drift-gate (portfolio P-13 Phase 3): the committed Kanban board is
+      # generated from docs/backlog.md, so it goes stale the moment a risk moves.
+      # Pinned to an exact generator version - an unpinned gate would rewrite the
+      # board whenever the generator changes, which is drift, not a gate.
+      # Deterministic and offline-ish, so it runs with the static gates rather
+      # than near the live-API suite.
+      - run: npm run lint:kanban
       # Deterministic TypeScript unit suite + branch-coverage floor for the
       # critical pure modules (CODEX-05) — runs before the live Cypress suite so
       # a pure-logic regression fails without touching the network.
