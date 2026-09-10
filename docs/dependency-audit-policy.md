@@ -24,7 +24,10 @@ npm run audit:ci   # → npm audit --audit-level=high
 
 ## Current state
 
-- **0 vulnerabilities** (`npm audit`, 28 July 2026).
+- **0 HIGH or CRITICAL** — the gate passes (`npm run audit:ci`, 10 September 2026).
+- **1 moderate**, below the gate threshold: `qs` (GHSA-x5fp-wj9c-mxmx array-limit
+  bypass, GHSA-4mjr-xmp4-gh2g DoS via attacker-controlled `isBuffer`). Reported
+  but non-blocking; triage into the backlog per the threshold rule above.
 - **0 active exceptions.**
 
 ## Temporary exceptions
@@ -65,6 +68,15 @@ targeted `overrides` in `package.json`, no direct-pin or parent-major churn:
 - **`postcss` → `8.5.24`** (advisory GHSA-r28c-9q8g-f849, path-traversal). One
   transitive copy via `@badeball/cypress-cucumber-preprocessor → find-cypress-specs
   → … → postcss@8.5.16`; the override bumps it within the 8.x line.
+- **`js-yaml` → `^4.3.2`** (advisory GHSA-2883-xcg3-v3hh, `maxTotalMergeKeys`
+  does not limit CPU use for empty merge sources — a DoS). Supersedes the earlier
+  `^4.3.1` override taken for CVE-2026-59870 / GHSA-5p4m-2wfm-xmqj on 2026-08-07:
+  the new advisory's affected range is `4.0.0 - 4.3.1`, so it **includes** the
+  version that previously cleared the gate, and `4.3.2` is the first release
+  outside it. Two transitive copies, both under the pinned preprocessor —
+  `@badeball/cypress-cucumber-preprocessor → cosmiconfig@9.0.2 → js-yaml` and
+  `… → mocha@11.7.6 → js-yaml` (deduped to one install) — so a single override
+  clears both. Within the 4.x line; no API change.
 - **`browserslist` → `^4.28.8`** (advisories GHSA-c83g-rgw3-j3cx, GHSA-73wf-gq98-2v4g,
   unbounded memory growth OOM and prototype write). Transitive copy via
   `@badeball/cypress-cucumber-preprocessor → find-cypress-specs → find-test-names →
