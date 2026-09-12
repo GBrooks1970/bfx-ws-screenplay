@@ -8,8 +8,8 @@
 
 # bfx-ws-screenplay — Backlog
 
-**Version:** 13 — browserslist High-severity advisories (GHSA-c83g-rgw3-j3cx / GHSA-73wf-gq98-2v4g) remediated via root override to ^4.28.8 on PR (2026-09-03); audit gate and main CI restored to green
-**Last Updated:** 2026-09-03
+**Version:** 14 — post-v5 dependency maintenance and Kanban publication reconciled; latest nightly SPEC-004 checksum failure and the below-threshold `qs` advisories recorded as open risks (2026-09-12)
+**Last Updated:** 2026-09-12
 **Based on:** `SPECIFICATION.md` (normative design spec), the SPEC-001..006 review packs (approved
 4–5 July 2026), code review v1 (`.review/CODE_REVIEW_CLAUDE_Fable_5_v1_20260706T1039Z/`,
 2026-07-06 — no HIGH findings), remediated by BFX-01..07 on
@@ -20,7 +20,8 @@ findings), remediated by TRIAGE-01..06 on PRs
 merged 2026-07-20, and code review v3 (`.review/CODE_REVIEW_CODEX_v1_20260724T0002Z/`, Codex
 GPT-5, 2026-07-24 — one HIGH, since resolved), remediated by CODEX-01..10 on PRs
 [#19](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/19)–[#28](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/28),
-merged 2026-07-28/29
+merged 2026-07-28/29; subsequent dependency-maintenance PRs #34, #38, #39 and #41; Kanban
+publication PR #40; and default-branch CI evidence through scheduled run #34667985630 (2026-09-12)
 
 This backlog tracks the SPEC-unit roadmap and any risks against it; ordering follows the
 specification's mandatory implementation order (SPEC-001 → 006, 007 stretch).
@@ -41,19 +42,64 @@ None.
 
 ### MEDIUM Priority (Score: 10–19)
 
-None. Risks #2–#4 (code review v1) resolved 2026-07-17; review v2 Risk #1 resolved 2026-07-20 —
-see Resolved Risks below.
+One current live-regression finding is open. Risks #2–#4 (code review v1) resolved 2026-07-17;
+review v2 Risk #1 resolved 2026-07-20 — see Resolved Risks below.
+
+#### Risk LIVE-01: Intermittent order-book checksum divergence in the nightly extended suite — Score: 10
+
+**Priority Score:** Security Impact (0) + Breakage Probability (6) + Maintenance Burden (4) = **10 points**
+**Impact:** Scheduled default-branch CI run
+[#34667985630](https://github.com/GBrooks1970/bfx-ws-screenplay/actions/runs/34667985630)
+failed SPEC-004 on 12 September 2026: two of the first five platform checksum frames diverged from
+the locally maintained order book, followed by three matches. The remaining 22 of 23 extended
+scenarios passed. ADR-010 correctly classified the outcome as one product failure and zero
+environment-blocked outcomes, so this is not eligible for the quiet-window pass-through.
+**Effort:** Unknown until the frame-ordering and book-fold root cause is reproduced
+**Status:** NEEDS INVESTIGATION (latest default-branch nightly red)
+**Affected Stacks:** TypeScript/Cypress live Bitfinex WebSocket lane (SPEC-004)
+
+**Update (2026-09-12):** The same `main` SHA (`e2406b0`) passed the preceding scheduled extended run
+[#34555150107](https://github.com/GBrooks1970/bfx-ws-screenplay/actions/runs/34555150107)
+on 11 September 2026. The isolated red run therefore proves an intermittent live-path failure, but
+does not yet establish whether the cause is product logic, frame sequencing, or an upstream feed
+condition.
+
+**Problem:**
+The flagship checksum assertion promises five consecutive matches after folding every buffered book
+frame up to the corresponding checksum index. A run that mismatches early frames and then recovers
+can indicate a race or ordering gap; treating it as environment-blocked, weakening the consecutive
+requirement, or blindly retrying would hide the evidence.
+
+**Refactor Strategy:**
+Reproduce SPEC-004 with the retained run artefact and a targeted live dispatch; compare the frame
+indices and book mutations immediately preceding the two mismatches. Fix only after the root cause
+is established. If the documented protocol contract changes, follow the SDD route and record an ADR
+change note before framework code.
+
+**Success Criteria:**
+- [ ] Root cause is evidenced from the retained report/frame diagnostics; any code or contract change
+      preserves exact checksum comparison and keeps product failures distinct from environment blocks.
+- [ ] Deterministic coverage protects the identified failure mode, and targeted SPEC-004 plus the
+      project gates pass without fixed sleeps or blind retries.
+
+---
 
 ### LOW Priority (Score: 0–9)
 
 Risks #5–#8 (code review v1) resolved 2026-07-17; review v2 Risks #2–#6 resolved 2026-07-20 — see
-Resolved Risks below. One LOW item remains open (unrelated recurring-maintenance item, not a
-review finding):
+Resolved Risks below. Two LOW maintenance items remain open; neither is a review finding:
 
 #### Risk #1: Pinned-trio drift (Cypress / cucumber-preprocessor / esbuild-preprocessor) — Score: 5
 
 **Priority Score:** Security Impact (1) + Breakage Probability (2) + Maintenance Burden (2) = **5 points**
-**Impact:** Cypress releases have moved ahead of the preprocessor's peer cap — as of 28 July 2026 the latest is Cypress **15.19.0**, while `@badeball/cypress-cucumber-preprocessor@25.0.0` still caps its peer range at `>=15.0.0 <=15.17.0` (verified 28 July 2026). The trio is pinned at cypress 15.17.0 / preprocessor 25.0.0 / esbuild-preprocessor 2.2.8 (esbuild peer `>=0.17.0`, installed 0.28.1) — all mutually compatible, `npm ls` reports no peer conflicts. An unconsidered Cypress bump past 15.17.0 breaks the build.
+**Impact:** The installed trio remains mutually compatible at Cypress 15.17.0 /
+`@badeball/cypress-cucumber-preprocessor@25.0.0` / esbuild-preprocessor 2.2.8, but it is now a
+deliberately old major set. Verified 12 September 2026: Cypress **16.0.0** and cucumber-preprocessor
+**28.0.0** are current, and preprocessor 28 supports Cypress 16; the installed preprocessor 25
+still caps Cypress at `>=15.0.0 <=15.17.0`. Esbuild-preprocessor 2.2.8 remains current, with an
+`esbuild >=0.17.0` peer (installed 0.28.1; current 0.28.2). An isolated Cypress bump past 15.17.0
+breaks the installed peer contract, while a coordinated move crosses major versions and therefore
+requires deliberate review rather than routine lockfile churn.
 **Effort:** 1 hr per deliberate upgrade
 **Status:** READY TO START (recurring maintenance, not a defect)
 **Affected Stacks:** TypeScript/Cypress (single stack)
@@ -73,12 +119,57 @@ trio together, re-run all gates plus one live `@extended` run.
 
 ---
 
+#### Risk DEP-01: `qs` moderate advisories below the HIGH audit threshold — Score: 7
+
+**Priority Score:** Security Impact (4) + Breakage Probability (1) + Maintenance Burden (2) = **7 points**
+**Impact:** `qs@6.15.3`, installed transitively through
+`cypress@15.17.0 → @cypress/request@4.0.1`, is affected by GHSA-x5fp-wj9c-mxmx (array-limit bypass)
+and GHSA-4mjr-xmp4-gh2g (denial of service via attacker-controlled `isBuffer`). `npm audit` reports
+one MODERATE package and a fix is available; `npm run audit:ci` remains green because the executable
+policy intentionally fails at HIGH or CRITICAL.
+**Effort:** ~1 hr for a narrow transitive upgrade or override plus verification
+**Status:** READY TO START (non-blocking dependency maintenance)
+**Affected Stacks:** Cypress development/test dependency tree
+
+**Update (2026-09-12):** This item is the backlog triage required by
+`docs/dependency-audit-policy.md`, which recorded the advisory after PR #41 rather than silently
+rounding the audit result down to zero vulnerabilities.
+
+**Refactor Strategy:**
+Prefer an upstream-supported parent update; otherwise assess a narrow `qs` override to 6.16.0 or
+later. Preserve the exact-pinned Cypress/preprocessor/esbuild trio unless peer compatibility is
+re-verified under Risk #1.
+
+**Success Criteria:**
+- [ ] `npm audit` reports no `qs` advisory, `npm run audit:ci` remains green, and the dependency path
+      is documented.
+- [ ] Typecheck, lint, deterministic unit coverage and live smoke pass after the lockfile change.
+
+---
+
 ### Resolved Risks
 
-#### `js-yaml` High-severity advisory (CVE-2026-59870 / GHSA-5p4m-2wfm-xmqj) ✅ Resolved 2026-08-07
+#### `js-yaml` High-severity advisories (GHSA-5p4m-2wfm-xmqj / GHSA-2883-xcg3-v3hh) ✅ Resolved 2026-09-10
 
-**Resolution:** Root npm override `"js-yaml": "^4.3.1"` added in `package.json`; `package-lock.json` updated; `npm audit:ci` verified zero vulnerabilities. Merged via PR #34 (`22c56d7`); post-merge `main` CI run 31184217398 green across all steps.
-**See:** commit `22c56d7`, PR #34.
+**Resolution:** PR #34 (`22c56d7`) introduced root npm override `"js-yaml": "^4.3.1"` for
+CVE-2026-59870 / GHSA-5p4m-2wfm-xmqj. When GHSA-2883-xcg3-v3hh later made 4.3.1 vulnerable,
+PR #41 (`0080091`) raised the override to `^4.3.2`, the first release outside the affected range.
+The pinned Cypress/preprocessor/esbuild trio did not change. Post-merge `main` CI run #34532572264
+passed `audit:ci`, typecheck, lint, unit coverage and live smoke.
+**See:** commits `22c56d7` and `0080091`; PRs #34 and #41; `docs/dependency-audit-policy.md`.
+
+#### Risk DEP-NA-01: `nanoid` transitive HIGH advisory (GHSA-2v37-7h3g-55p8) ✅ Resolved 2026-08-08
+
+**Resolution:** Root override `"nanoid": "^3.3.18"` and the corresponding lockfile update cleared
+the HIGH advisory without changing the pinned toolchain trio. Merged via PR #38 (`941e732`).
+**See:** commit `941e732`, PR #38.
+
+#### Risk DEP-BL-01: `browserslist` HIGH advisories (GHSA-c83g-rgw3-j3cx / GHSA-73wf-gq98-2v4g) ✅ Resolved 2026-09-03
+
+**Resolution:** Root override `"browserslist": "^4.28.8"` cleared the unbounded-memory-growth and
+prototype-write advisories in the preprocessor dependency path. Merged via PR #39 (`56c27a4`);
+post-merge `main` CI run #33747218851 passed.
+**See:** commit `56c27a4`, PR #39; `docs/dependency-audit-policy.md`.
 
 **Resolution:** All ten findings from `.review/CODE_REVIEW_CODEX_v1_20260724T0002Z/` remediated on
 PRs #19–#28 (details per item in `WORKLIST_bfx-ws-screenplay.md`): **CODEX-01/02** — checksum
@@ -212,15 +303,30 @@ consecutive green runs prove no breakage.
 
 ---
 
+## Operational Delivery Updates
+
+**Update (2026-09-10):** PR #40 (`e2406b0`) published
+`bfx-ws-screenplay_implementation-kanban_v1.html`, generated from this backlog with the pinned
+`portfolio-kanban-generator@1.2.0`. `npm run lint:kanban` now drift-gates the committed board in CI;
+`npm run kanban:sync` regenerates it deliberately. The gate was proved in both directions before
+merge. GitHub Pages run #34532908859 succeeded, and the board is live at
+<https://gbrooks1970.github.io/bfx-ws-screenplay/>.
+
+**Update (2026-09-12):** This v14 reconciliation adds two open findings and records three subsequent
+dependency remediations, so the generated board must be refreshed in the same change and pass
+`npm run lint:kanban` before review.
+
+---
+
 ## Risk Summary
 
 | Priority | Count | Total Effort | Status Distribution |
 |---|---|---|---|
 | HIGH (20–30) | 0 | — | — |
-| MEDIUM (10–19) | 0 | — | — |
-| LOW (0–9) | 1 | ~1 hr per deliberate upgrade | READY TO START (Risk #1 pinned-trio drift — recurring maintenance, unrelated to any review) |
-| **Total Outstanding** | **1** | recurring | |
-| Resolved | 24 | | 7 via PR #9 (review v1) + 6 via PRs #11–#16 (review v2) + 10 via PRs #19–#28 (review v3, CODEX-01..10) + 1 prior |
+| MEDIUM (10–19) | 1 | investigation unestimated | NEEDS INVESTIGATION (LIVE-01 — latest nightly SPEC-004 checksum failure) |
+| LOW (0–9) | 2 | ~1 hr per maintenance action | READY TO START (Risk #1 pinned-trio drift; DEP-01 `qs` advisories) |
+| **Total Outstanding** | **3** | one investigation + recurring maintenance | |
+| Resolved | 28 | | 7 via PR #9 + 6 via PRs #11–#16 + 10 via PRs #19–#28 + 1 prior + 4 post-review dependency remediations |
 
 ---
 
@@ -297,7 +403,8 @@ feature file → **Gary's review** → implement → three consecutive green run
 | Done | MEDIUM+LOW | Review v1 findings: Risks #2–#8 (BFX-01..07, PR #9, merged) | ~5.5 hrs | 2026-07-17 | 2026-07-17 |
 | Done | MEDIUM+LOW | Review v2 findings: Risks #1–#6 (TRIAGE-01..06, PRs #11–#16, merged) | ~2 hrs | 2026-07-20 | 2026-07-20 |
 | Done | HIGH+MEDIUM+LOW | Review v3 (Codex GPT-5): CODEX-01..10 (PRs #19–#28, merged) | ~10 hrs | 2026-07-28 | 2026-07-29 |
-| Later | — | SPEC-007 stretch (deferred, disposition recorded 2026-07-29); Risk #1 pinned-trio maintenance (recurring) | — | TBD | TBD |
+| Next | MEDIUM | LIVE-01 intermittent SPEC-004 checksum divergence | unestimated | TBD | TBD |
+| Later | LOW | DEP-01 `qs` advisories; Risk #1 pinned-trio maintenance (recurring); SPEC-007 stretch remains deferred | ~1 hr + recurring | TBD | TBD |
 
 ---
 
@@ -309,5 +416,7 @@ feature file → **Gary's review** → implement → three consecutive green run
   (`CODE_REVIEW_CLAUDE_Fable_5_v1_20260706T1039Z/`) triaged into Risks #2–#8; code review v2
   (`CODE_REVIEW_CLAUDE_Fable_5_v2_20260718T0608Z/`) triaged into review v2 Risks #1–#6
 - Mark completion dates when items move to ✅ Resolved
+- Regenerate `bfx-ws-screenplay_implementation-kanban_v1.html` with `npm run kanban:sync` whenever
+  risk state changes, then prove parity with `npm run lint:kanban`
 - The design spec (`SPECIFICATION.md`) is normative — backlog items never override it; deviations
   need an ADR change note in `docs/adr/` first
