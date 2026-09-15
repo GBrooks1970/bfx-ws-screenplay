@@ -116,7 +116,9 @@ implementation in any language can reproduce the same expected results.
 
 The flagship assertion (SPEC-004): a locally maintained order-book replica must match the
 platform's own CRC-32 checksum frames five times consecutively — folded with buffer-index
-determinism, so each checksum is compared against exactly the updates that preceded it.
+determinism, so each checksum is compared against exactly the updates that preceded it. A
+mismatch stays a product failure and reports bounded replay evidence: the snapshot index/size,
+the five preceding mutations, and the exact local checksum input at that buffer index.
 
 Cucumber HTML/JSON reports are written to `reports/` (published as CI
 artefacts). Scenarios blocked by platform maintenance — or by a quiet market
@@ -162,7 +164,8 @@ to drift independently, so upgrades are deliberate.
 `overrides` in `package.json` force patched transitive dev-only dependencies —
 `diff`/`serialize-javascript` inside mocha's tree, plus `brace-expansion` (5.0.8)
 and `postcss` (8.5.24) to clear two HIGH DoS/path-traversal advisories. The trio
-above is untouched. `npm audit`: **0 vulnerabilities**.
+above is untouched. The lockfile resolves transitive `@cypress/request` dependency
+`qs` to patched 6.16.0 through its supported range. `npm audit`: **0 vulnerabilities**.
 
 A dependency-audit gate — `npm run audit:ci` (`npm audit --audit-level=high`) —
 runs in both CI jobs and fails the build on any unexcepted HIGH+ finding. The

@@ -24,10 +24,8 @@ npm run audit:ci   # → npm audit --audit-level=high
 
 ## Current state
 
-- **0 HIGH or CRITICAL** — the gate passes (`npm run audit:ci`, 10 September 2026).
-- **1 moderate**, below the gate threshold: `qs` (GHSA-x5fp-wj9c-mxmx array-limit
-  bypass, GHSA-4mjr-xmp4-gh2g DoS via attacker-controlled `isBuffer`). Reported
-  but non-blocking; triage into the backlog per the threshold rule above.
+- **0 vulnerabilities at any severity** — both `npm audit` and `npm run audit:ci`
+  pass (15 September 2026).
 - **0 active exceptions.**
 
 ## Temporary exceptions
@@ -83,6 +81,11 @@ targeted `overrides` in `package.json`, no direct-pin or parent-major churn:
   @babel/core → @babel/helper-compilation-targets → browserslist@4.28.4`.
   The override forces `browserslist` to `4.28.8`, clearing both advisories while
   remaining fully compatible with Node 20 and CI Node 24 (`node: >=13.7`).
+- **`qs` → `6.16.0`** (advisories GHSA-x5fp-wj9c-mxmx and
+  GHSA-4mjr-xmp4-gh2g). The transitive path is `cypress@15.17.0 →
+  @cypress/request@4.0.1 → qs`; the parent declares `qs@^6.15.2`, so a
+  lockfile-only update selected the patched release without an override or a
+  direct dependency.
 
 Both paths are exercised in CI: `eslint → minimatch → brace-expansion` by
 `npm run lint`, and `mocha → minimatch → brace-expansion` (feature-file globbing
@@ -90,11 +93,11 @@ in the cucumber preprocessor) by `npm run test:smoke`.
 
 ## Relationship to the pinned trio
 
-The audit overrides above touch only leaf packages (`brace-expansion`,
-`postcss`) and do **not** change the deliberately exact-pinned compatibility
+The audit remediations above touch only transitive packages and do **not**
+change the deliberately exact-pinned compatibility
 trio — `cypress`, `@badeball/cypress-cucumber-preprocessor`,
 `@bahmutov/cypress-esbuild-preprocessor` (+ `esbuild`). That trio is governed by
 backlog **Risk #1 (pinned-trio drift)**: the preprocessor caps Cypress at
 `<=15.17.0`, so the trio is bumped only together after checking the peer range.
-Because this remediation left the trio untouched, no live `@extended`
-re-validation was required — the smoke gate covers the affected transitive paths.
+The `qs` remediation left the trio untouched; the live smoke gate covers its
+transitive Cypress path.

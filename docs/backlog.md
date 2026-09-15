@@ -8,8 +8,8 @@
 
 # bfx-ws-screenplay — Backlog
 
-**Version:** 14 — post-v5 dependency maintenance and Kanban publication reconciled; latest nightly SPEC-004 checksum failure and the below-threshold `qs` advisories recorded as open risks (2026-09-12)
-**Last Updated:** 2026-09-12
+**Version:** 17 — pinned-trio compatibility reviewed and held at the Node 20 support boundary; DEP-01 resolved and LIVE-01 remains open (2026-09-15)
+**Last Updated:** 2026-09-15
 **Based on:** `SPECIFICATION.md` (normative design spec), the SPEC-001..006 review packs (approved
 4–5 July 2026), code review v1 (`.review/CODE_REVIEW_CLAUDE_Fable_5_v1_20260706T1039Z/`,
 2026-07-06 — no HIGH findings), remediated by BFX-01..07 on
@@ -21,7 +21,7 @@ merged 2026-07-20, and code review v3 (`.review/CODE_REVIEW_CODEX_v1_20260724T00
 GPT-5, 2026-07-24 — one HIGH, since resolved), remediated by CODEX-01..10 on PRs
 [#19](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/19)–[#28](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/28),
 merged 2026-07-28/29; subsequent dependency-maintenance PRs #34, #38, #39 and #41; Kanban
-publication PR #40; and default-branch CI evidence through scheduled run #34667985630 (2026-09-12)
+publication PR #40; and default-branch CI evidence through scheduled run #34921756136 (2026-09-15)
 
 This backlog tracks the SPEC-unit roadmap and any risks against it; ordering follows the
 specification's mandatory implementation order (SPEC-001 → 006, 007 stretch).
@@ -55,7 +55,7 @@ the locally maintained order book, followed by three matches. The remaining 22 o
 scenarios passed. ADR-010 correctly classified the outcome as one product failure and zero
 environment-blocked outcomes, so this is not eligible for the quiet-window pass-through.
 **Effort:** Unknown until the frame-ordering and book-fold root cause is reproduced
-**Status:** NEEDS INVESTIGATION (latest default-branch nightly red)
+**Status:** NEEDS INVESTIGATION (latest two default-branch nightlies green; intermittent failure unresolved)
 **Affected Stacks:** TypeScript/Cypress live Bitfinex WebSocket lane (SPEC-004)
 
 **Update (2026-09-12):** The same `main` SHA (`e2406b0`) passed the preceding scheduled extended run
@@ -64,6 +64,17 @@ on 11 September 2026. The isolated red run therefore proves an intermittent live
 does not yet establish whether the cause is product logic, frame sequencing, or an upstream feed
 condition.
 
+**Update (2026-09-15):** Scheduled run
+[#34733362800](https://github.com/GBrooks1970/bfx-ws-screenplay/actions/runs/34733362800)
+failed one checksum at buffer index 28 before four matches; runs
+[#34799874514](https://github.com/GBrooks1970/bfx-ws-screenplay/actions/runs/34799874514) and
+[#34921756136](https://github.com/GBrooks1970/bfx-ws-screenplay/actions/runs/34921756136) then passed.
+The five-night sequence is therefore pass/fail/fail/pass/pass. Both retained failure artefacts were
+inspected: they contain Cucumber JSON/HTML/messages only, with no raw-frame attachments, so they
+confirm the checksum indices and recovery but cannot establish root cause. Mismatch-only diagnostics
+now capture the snapshot index/size, update count, last five preceding mutations and exact local
+top-25 checksum input at each failed checksum index; deterministic tests cover the bounded output.
+
 **Problem:**
 The flagship checksum assertion promises five consecutive matches after folding every buffered book
 frame up to the corresponding checksum index. A run that mismatches early frames and then recovers
@@ -71,9 +82,9 @@ can indicate a race or ordering gap; treating it as environment-blocked, weakeni
 requirement, or blindly retrying would hide the evidence.
 
 **Refactor Strategy:**
-Reproduce SPEC-004 with the retained run artefact and a targeted live dispatch; compare the frame
-indices and book mutations immediately preceding the two mismatches. Fix only after the root cause
-is established. If the documented protocol contract changes, follow the SDD route and record an ADR
+Use the new bounded mismatch evidence from a future recurrence to compare the snapshot, preceding
+mutations and exact local checksum input at each mismatch. Fix only after the root cause is
+established. If the documented protocol contract changes, follow the SDD route and record an ADR
 change note before framework code.
 
 **Success Criteria:**
@@ -81,13 +92,15 @@ change note before framework code.
       preserves exact checksum comparison and keeps product failures distinct from environment blocks.
 - [ ] Deterministic coverage protects the identified failure mode, and targeted SPEC-004 plus the
       project gates pass without fixed sleeps or blind retries.
+- [x] Retained failure artefacts inspected; because they contain no raw frames, bounded mismatch
+      diagnostics and deterministic coverage added without weakening the five-match contract.
 
 ---
 
 ### LOW Priority (Score: 0–9)
 
 Risks #5–#8 (code review v1) resolved 2026-07-17; review v2 Risks #2–#6 resolved 2026-07-20 — see
-Resolved Risks below. Two LOW maintenance items remain open; neither is a review finding:
+Resolved Risks below. One LOW maintenance item remains open; it is not a review finding:
 
 #### Risk #1: Pinned-trio drift (Cypress / cucumber-preprocessor / esbuild-preprocessor) — Score: 5
 
@@ -98,11 +111,18 @@ deliberately old major set. Verified 12 September 2026: Cypress **16.0.0** and c
 **28.0.0** are current, and preprocessor 28 supports Cypress 16; the installed preprocessor 25
 still caps Cypress at `>=15.0.0 <=15.17.0`. Esbuild-preprocessor 2.2.8 remains current, with an
 `esbuild >=0.17.0` peer (installed 0.28.1; current 0.28.2). An isolated Cypress bump past 15.17.0
-breaks the installed peer contract, while a coordinated move crosses major versions and therefore
-requires deliberate review rather than routine lockfile churn.
+breaks the installed peer contract. A coordinated move also crosses the project's supported-runtime
+boundary: Cypress 16 requires Node `^22 || ^24 || >=26`, while ADR-009 and `package.json#engines`
+make Node 20 a checked support promise.
 **Effort:** 1 hr per deliberate upgrade
-**Status:** READY TO START (recurring maintenance, not a defect)
+**Status:** NEEDS DECISION (raising the Node floor is outside routine dependency maintenance)
 **Affected Stacks:** TypeScript/Cypress (single stack)
+
+**Update (2026-09-15):** Registry metadata confirms cucumber-preprocessor 28 accepts Cypress 16
+and esbuild-preprocessor 2.2.8 accepts esbuild `>=0.17.0`, so candidate peer compatibility is not
+the blocker. The upgrade was deliberately not installed because doing so would make the declared
+Node 20 floor false. Proceed only after an explicit Node support-floor decision and corresponding
+ADR-009/declaration reconciliation.
 
 **Problem:**
 Dependencies are exact-pinned by design (README pin table). The preprocessor's Cypress peer
@@ -111,43 +131,28 @@ upgrades must check the peer range first. The CODEX-04 audit overrides (`brace-e
 `postcss`) touch only leaf packages and do not affect this trio.
 
 **Refactor Strategy:**
-On each deliberate upgrade: check `@badeball/cypress-cucumber-preprocessor` peer range, bump the
-trio together, re-run all gates plus one live `@extended` run.
+First decide whether to retire Node 20 support. If approved, reconcile ADR-009, `package.json#engines`
+and user-facing runtime declarations; then bump Cypress/cucumber-preprocessor together, update the
+compatible esbuild pin, and re-run all gates plus one live `@extended` run.
 
 **Success Criteria:**
+- [ ] Node support-floor decision is explicit and ADR-009/declarations remain truthful.
 - [ ] Trio versions mutually compatible after any bump; gates green; README pin table updated.
 
 ---
 
-#### Risk DEP-01: `qs` moderate advisories below the HIGH audit threshold — Score: 7
-
-**Priority Score:** Security Impact (4) + Breakage Probability (1) + Maintenance Burden (2) = **7 points**
-**Impact:** `qs@6.15.3`, installed transitively through
-`cypress@15.17.0 → @cypress/request@4.0.1`, is affected by GHSA-x5fp-wj9c-mxmx (array-limit bypass)
-and GHSA-4mjr-xmp4-gh2g (denial of service via attacker-controlled `isBuffer`). `npm audit` reports
-one MODERATE package and a fix is available; `npm run audit:ci` remains green because the executable
-policy intentionally fails at HIGH or CRITICAL.
-**Effort:** ~1 hr for a narrow transitive upgrade or override plus verification
-**Status:** READY TO START (non-blocking dependency maintenance)
-**Affected Stacks:** Cypress development/test dependency tree
-
-**Update (2026-09-12):** This item is the backlog triage required by
-`docs/dependency-audit-policy.md`, which recorded the advisory after PR #41 rather than silently
-rounding the audit result down to zero vulnerabilities.
-
-**Refactor Strategy:**
-Prefer an upstream-supported parent update; otherwise assess a narrow `qs` override to 6.16.0 or
-later. Preserve the exact-pinned Cypress/preprocessor/esbuild trio unless peer compatibility is
-re-verified under Risk #1.
-
-**Success Criteria:**
-- [ ] `npm audit` reports no `qs` advisory, `npm run audit:ci` remains green, and the dependency path
-      is documented.
-- [ ] Typecheck, lint, deterministic unit coverage and live smoke pass after the lockfile change.
-
 ---
 
 ### Resolved Risks
+
+#### Risk DEP-01: `qs` moderate advisories below the HIGH audit threshold ✅ Resolved 2026-09-15
+
+**Resolution:** The existing supported path `cypress@15.17.0 → @cypress/request@4.0.1 →
+qs@^6.15.2` now resolves `qs@6.16.0` through `package-lock.json`; no override, direct dependency or
+toolchain change was required. This clears GHSA-x5fp-wj9c-mxmx and GHSA-4mjr-xmp4-gh2g. A fresh
+`npm ci` plus `npm ls qs` proved the path; `npm audit` and `npm run audit:ci` both reported zero
+vulnerabilities. Typecheck, lint, deterministic unit coverage (124/124) and live smoke (8/8) passed.
+**See:** `package-lock.json`; `docs/dependency-audit-policy.md`.
 
 #### `js-yaml` High-severity advisories (GHSA-5p4m-2wfm-xmqj / GHSA-2883-xcg3-v3hh) ✅ Resolved 2026-09-10
 
@@ -313,8 +318,20 @@ merge. GitHub Pages run #34532908859 succeeded, and the board is live at
 <https://gbrooks1970.github.io/bfx-ws-screenplay/>.
 
 **Update (2026-09-12):** This v14 reconciliation adds two open findings and records three subsequent
-dependency remediations, so the generated board must be refreshed in the same change and pass
+dependency remediations; the generated board was refreshed in the same change and passed
 `npm run lint:kanban` before review.
+
+**Update (2026-09-15):** The retained LIVE-01 artefacts lacked raw-frame diagnostics, so the open
+risk now records the bounded evidence added for the next recurrence. The exact five-consecutive-match
+contract and product-failure classification are unchanged.
+
+**Update (2026-09-15):** DEP-01 was resolved without an override: the existing
+`@cypress/request@4.0.1` range admits patched `qs@6.16.0`, so only the lockfile changed. The audit
+is clean and the exact-pinned Cypress toolchain remained untouched in this maintenance phase.
+
+**Update (2026-09-15):** The Cypress 16/preprocessor 28 peer pair is compatible, but Cypress 16 no
+longer supports the project's promised Node 20 floor. Risk #1 therefore remains open pending an
+explicit runtime-support decision; no incompatible peer install or undeclared floor change was made.
 
 ---
 
@@ -323,10 +340,10 @@ dependency remediations, so the generated board must be refreshed in the same ch
 | Priority | Count | Total Effort | Status Distribution |
 |---|---|---|---|
 | HIGH (20–30) | 0 | — | — |
-| MEDIUM (10–19) | 1 | investigation unestimated | NEEDS INVESTIGATION (LIVE-01 — latest nightly SPEC-004 checksum failure) |
-| LOW (0–9) | 2 | ~1 hr per maintenance action | READY TO START (Risk #1 pinned-trio drift; DEP-01 `qs` advisories) |
-| **Total Outstanding** | **3** | one investigation + recurring maintenance | |
-| Resolved | 28 | | 7 via PR #9 + 6 via PRs #11–#16 + 10 via PRs #19–#28 + 1 prior + 4 post-review dependency remediations |
+| MEDIUM (10–19) | 1 | investigation unestimated | NEEDS INVESTIGATION (LIVE-01 — intermittent SPEC-004 failure; latest two nightlies green) |
+| LOW (0–9) | 1 | ~1 hr per maintenance action | NEEDS DECISION (Risk #1 — Cypress 16 requires retiring Node 20 support) |
+| **Total Outstanding** | **2** | one investigation + recurring maintenance | |
+| Resolved | 29 | | 7 via PR #9 + 6 via PRs #11–#16 + 10 via PRs #19–#28 + 1 prior + 5 post-review dependency remediations |
 
 ---
 
@@ -404,7 +421,7 @@ feature file → **Gary's review** → implement → three consecutive green run
 | Done | MEDIUM+LOW | Review v2 findings: Risks #1–#6 (TRIAGE-01..06, PRs #11–#16, merged) | ~2 hrs | 2026-07-20 | 2026-07-20 |
 | Done | HIGH+MEDIUM+LOW | Review v3 (Codex GPT-5): CODEX-01..10 (PRs #19–#28, merged) | ~10 hrs | 2026-07-28 | 2026-07-29 |
 | Next | MEDIUM | LIVE-01 intermittent SPEC-004 checksum divergence | unestimated | TBD | TBD |
-| Later | LOW | DEP-01 `qs` advisories; Risk #1 pinned-trio maintenance (recurring); SPEC-007 stretch remains deferred | ~1 hr + recurring | TBD | TBD |
+| Later | LOW | Risk #1 pinned-trio maintenance (recurring); SPEC-007 stretch remains deferred | recurring | TBD | TBD |
 
 ---
 
