@@ -164,7 +164,8 @@ to drift independently, so upgrades are deliberate.
 `overrides` in `package.json` force patched transitive dev-only dependencies —
 `diff`/`serialize-javascript` inside mocha's tree, plus `brace-expansion` (5.0.8)
 and `postcss` (8.5.24) to clear two HIGH DoS/path-traversal advisories. The trio
-above is untouched. `npm audit`: **0 vulnerabilities**.
+above is untouched. The lockfile resolves transitive `@cypress/request` dependency
+`qs` to patched 6.16.0 through its supported range. `npm audit`: **0 vulnerabilities**.
 
 A dependency-audit gate — `npm run audit:ci` (`npm audit --audit-level=high`) —
 runs in both CI jobs and fails the build on any unexcepted HIGH+ finding. The

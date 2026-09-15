@@ -8,7 +8,7 @@
 
 # bfx-ws-screenplay — Backlog
 
-**Version:** 15 — LIVE-01 retained-artefact investigation and bounded checksum diagnostics reconciled; latest two nightlies green but the intermittent failure remains open (2026-09-15)
+**Version:** 16 — DEP-01 resolved by an upstream-supported lockfile-only `qs` update; LIVE-01 remains open with bounded diagnostics (2026-09-15)
 **Last Updated:** 2026-09-15
 **Based on:** `SPECIFICATION.md` (normative design spec), the SPEC-001..006 review packs (approved
 4–5 July 2026), code review v1 (`.review/CODE_REVIEW_CLAUDE_Fable_5_v1_20260706T1039Z/`,
@@ -100,7 +100,7 @@ change note before framework code.
 ### LOW Priority (Score: 0–9)
 
 Risks #5–#8 (code review v1) resolved 2026-07-17; review v2 Risks #2–#6 resolved 2026-07-20 — see
-Resolved Risks below. Two LOW maintenance items remain open; neither is a review finding:
+Resolved Risks below. One LOW maintenance item remains open; it is not a review finding:
 
 #### Risk #1: Pinned-trio drift (Cypress / cucumber-preprocessor / esbuild-preprocessor) — Score: 5
 
@@ -132,35 +132,18 @@ trio together, re-run all gates plus one live `@extended` run.
 
 ---
 
-#### Risk DEP-01: `qs` moderate advisories below the HIGH audit threshold — Score: 7
-
-**Priority Score:** Security Impact (4) + Breakage Probability (1) + Maintenance Burden (2) = **7 points**
-**Impact:** `qs@6.15.3`, installed transitively through
-`cypress@15.17.0 → @cypress/request@4.0.1`, is affected by GHSA-x5fp-wj9c-mxmx (array-limit bypass)
-and GHSA-4mjr-xmp4-gh2g (denial of service via attacker-controlled `isBuffer`). `npm audit` reports
-one MODERATE package and a fix is available; `npm run audit:ci` remains green because the executable
-policy intentionally fails at HIGH or CRITICAL.
-**Effort:** ~1 hr for a narrow transitive upgrade or override plus verification
-**Status:** READY TO START (non-blocking dependency maintenance)
-**Affected Stacks:** Cypress development/test dependency tree
-
-**Update (2026-09-12):** This item is the backlog triage required by
-`docs/dependency-audit-policy.md`, which recorded the advisory after PR #41 rather than silently
-rounding the audit result down to zero vulnerabilities.
-
-**Refactor Strategy:**
-Prefer an upstream-supported parent update; otherwise assess a narrow `qs` override to 6.16.0 or
-later. Preserve the exact-pinned Cypress/preprocessor/esbuild trio unless peer compatibility is
-re-verified under Risk #1.
-
-**Success Criteria:**
-- [ ] `npm audit` reports no `qs` advisory, `npm run audit:ci` remains green, and the dependency path
-      is documented.
-- [ ] Typecheck, lint, deterministic unit coverage and live smoke pass after the lockfile change.
-
 ---
 
 ### Resolved Risks
+
+#### Risk DEP-01: `qs` moderate advisories below the HIGH audit threshold ✅ Resolved 2026-09-15
+
+**Resolution:** The existing supported path `cypress@15.17.0 → @cypress/request@4.0.1 →
+qs@^6.15.2` now resolves `qs@6.16.0` through `package-lock.json`; no override, direct dependency or
+toolchain change was required. This clears GHSA-x5fp-wj9c-mxmx and GHSA-4mjr-xmp4-gh2g. A fresh
+`npm ci` plus `npm ls qs` proved the path; `npm audit` and `npm run audit:ci` both reported zero
+vulnerabilities. Typecheck, lint, deterministic unit coverage (124/124) and live smoke (8/8) passed.
+**See:** `package-lock.json`; `docs/dependency-audit-policy.md`.
 
 #### `js-yaml` High-severity advisories (GHSA-5p4m-2wfm-xmqj / GHSA-2883-xcg3-v3hh) ✅ Resolved 2026-09-10
 
@@ -333,6 +316,10 @@ dependency remediations; the generated board was refreshed in the same change an
 risk now records the bounded evidence added for the next recurrence. The exact five-consecutive-match
 contract and product-failure classification are unchanged.
 
+**Update (2026-09-15):** DEP-01 was resolved without an override: the existing
+`@cypress/request@4.0.1` range admits patched `qs@6.16.0`, so only the lockfile changed. The audit
+is clean and the exact-pinned Cypress toolchain remained untouched in this maintenance phase.
+
 ---
 
 ## Risk Summary
@@ -341,9 +328,9 @@ contract and product-failure classification are unchanged.
 |---|---|---|---|
 | HIGH (20–30) | 0 | — | — |
 | MEDIUM (10–19) | 1 | investigation unestimated | NEEDS INVESTIGATION (LIVE-01 — intermittent SPEC-004 failure; latest two nightlies green) |
-| LOW (0–9) | 2 | ~1 hr per maintenance action | READY TO START (Risk #1 pinned-trio drift; DEP-01 `qs` advisories) |
-| **Total Outstanding** | **3** | one investigation + recurring maintenance | |
-| Resolved | 28 | | 7 via PR #9 + 6 via PRs #11–#16 + 10 via PRs #19–#28 + 1 prior + 4 post-review dependency remediations |
+| LOW (0–9) | 1 | ~1 hr per maintenance action | READY TO START (Risk #1 pinned-trio drift) |
+| **Total Outstanding** | **2** | one investigation + recurring maintenance | |
+| Resolved | 29 | | 7 via PR #9 + 6 via PRs #11–#16 + 10 via PRs #19–#28 + 1 prior + 5 post-review dependency remediations |
 
 ---
 
@@ -421,7 +408,7 @@ feature file → **Gary's review** → implement → three consecutive green run
 | Done | MEDIUM+LOW | Review v2 findings: Risks #1–#6 (TRIAGE-01..06, PRs #11–#16, merged) | ~2 hrs | 2026-07-20 | 2026-07-20 |
 | Done | HIGH+MEDIUM+LOW | Review v3 (Codex GPT-5): CODEX-01..10 (PRs #19–#28, merged) | ~10 hrs | 2026-07-28 | 2026-07-29 |
 | Next | MEDIUM | LIVE-01 intermittent SPEC-004 checksum divergence | unestimated | TBD | TBD |
-| Later | LOW | DEP-01 `qs` advisories; Risk #1 pinned-trio maintenance (recurring); SPEC-007 stretch remains deferred | ~1 hr + recurring | TBD | TBD |
+| Later | LOW | Risk #1 pinned-trio maintenance (recurring); SPEC-007 stretch remains deferred | recurring | TBD | TBD |
 
 ---
 
