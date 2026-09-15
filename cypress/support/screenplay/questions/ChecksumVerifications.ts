@@ -1,16 +1,12 @@
 import { CommunicateOverWebSocket } from '../abilities/CommunicateOverWebSocket';
 import { SYMBOLS, TIMEOUTS } from '../../config';
-import { bookChecksum, foldBook } from '../../books';
 import { isBookChecksumFrame } from '../../../schemas';
 import { AssertionError, Question } from '../core';
 import { onChannelObservationTimeout } from '../streams';
 import { extractBookFrames } from './bookFolding';
+import { verifyChecksumAtIndex, type ChecksumVerification } from './checksumDiagnostics';
 
-export type ChecksumVerification = {
-  expected: number; // the platform's cs value
-  actual: number; // CRC-32 of the book folded up to that cs frame's index
-  csIndex: number;
-};
+export type { ChecksumVerification } from './checksumDiagnostics';
 
 /**
  * The flagship question (spec Section 6.4): for each of the first `count`
@@ -63,14 +59,13 @@ export class ChecksumVerifications {
                     'A checksum frame does not match the [chanId, "cs", integer] schema',
                   );
                 }
-                const expected = buffered.frame[2];
-                const book = foldBook(
+                return verifyChecksumAtIndex(
                   log.snapshotLevels,
-                  log.updates
-                    .filter((update) => update.index < buffered.index)
-                    .map((update) => update.level),
+                  log.snapshotIndex,
+                  log.updates,
+                  buffered.index,
+                  buffered.frame[2],
                 );
-                return { expected, actual: bookChecksum(book), csIndex: buffered.index };
               });
             }),
         );

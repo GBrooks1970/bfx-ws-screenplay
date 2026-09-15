@@ -8,8 +8,8 @@
 
 # bfx-ws-screenplay — Backlog
 
-**Version:** 14 — post-v5 dependency maintenance and Kanban publication reconciled; latest nightly SPEC-004 checksum failure and the below-threshold `qs` advisories recorded as open risks (2026-09-12)
-**Last Updated:** 2026-09-12
+**Version:** 15 — LIVE-01 retained-artefact investigation and bounded checksum diagnostics reconciled; latest two nightlies green but the intermittent failure remains open (2026-09-15)
+**Last Updated:** 2026-09-15
 **Based on:** `SPECIFICATION.md` (normative design spec), the SPEC-001..006 review packs (approved
 4–5 July 2026), code review v1 (`.review/CODE_REVIEW_CLAUDE_Fable_5_v1_20260706T1039Z/`,
 2026-07-06 — no HIGH findings), remediated by BFX-01..07 on
@@ -21,7 +21,7 @@ merged 2026-07-20, and code review v3 (`.review/CODE_REVIEW_CODEX_v1_20260724T00
 GPT-5, 2026-07-24 — one HIGH, since resolved), remediated by CODEX-01..10 on PRs
 [#19](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/19)–[#28](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/28),
 merged 2026-07-28/29; subsequent dependency-maintenance PRs #34, #38, #39 and #41; Kanban
-publication PR #40; and default-branch CI evidence through scheduled run #34667985630 (2026-09-12)
+publication PR #40; and default-branch CI evidence through scheduled run #34921756136 (2026-09-15)
 
 This backlog tracks the SPEC-unit roadmap and any risks against it; ordering follows the
 specification's mandatory implementation order (SPEC-001 → 006, 007 stretch).
@@ -55,7 +55,7 @@ the locally maintained order book, followed by three matches. The remaining 22 o
 scenarios passed. ADR-010 correctly classified the outcome as one product failure and zero
 environment-blocked outcomes, so this is not eligible for the quiet-window pass-through.
 **Effort:** Unknown until the frame-ordering and book-fold root cause is reproduced
-**Status:** NEEDS INVESTIGATION (latest default-branch nightly red)
+**Status:** NEEDS INVESTIGATION (latest two default-branch nightlies green; intermittent failure unresolved)
 **Affected Stacks:** TypeScript/Cypress live Bitfinex WebSocket lane (SPEC-004)
 
 **Update (2026-09-12):** The same `main` SHA (`e2406b0`) passed the preceding scheduled extended run
@@ -64,6 +64,17 @@ on 11 September 2026. The isolated red run therefore proves an intermittent live
 does not yet establish whether the cause is product logic, frame sequencing, or an upstream feed
 condition.
 
+**Update (2026-09-15):** Scheduled run
+[#34733362800](https://github.com/GBrooks1970/bfx-ws-screenplay/actions/runs/34733362800)
+failed one checksum at buffer index 28 before four matches; runs
+[#34799874514](https://github.com/GBrooks1970/bfx-ws-screenplay/actions/runs/34799874514) and
+[#34921756136](https://github.com/GBrooks1970/bfx-ws-screenplay/actions/runs/34921756136) then passed.
+The five-night sequence is therefore pass/fail/fail/pass/pass. Both retained failure artefacts were
+inspected: they contain Cucumber JSON/HTML/messages only, with no raw-frame attachments, so they
+confirm the checksum indices and recovery but cannot establish root cause. Mismatch-only diagnostics
+now capture the snapshot index/size, update count, last five preceding mutations and exact local
+top-25 checksum input at each failed checksum index; deterministic tests cover the bounded output.
+
 **Problem:**
 The flagship checksum assertion promises five consecutive matches after folding every buffered book
 frame up to the corresponding checksum index. A run that mismatches early frames and then recovers
@@ -71,9 +82,9 @@ can indicate a race or ordering gap; treating it as environment-blocked, weakeni
 requirement, or blindly retrying would hide the evidence.
 
 **Refactor Strategy:**
-Reproduce SPEC-004 with the retained run artefact and a targeted live dispatch; compare the frame
-indices and book mutations immediately preceding the two mismatches. Fix only after the root cause
-is established. If the documented protocol contract changes, follow the SDD route and record an ADR
+Use the new bounded mismatch evidence from a future recurrence to compare the snapshot, preceding
+mutations and exact local checksum input at each mismatch. Fix only after the root cause is
+established. If the documented protocol contract changes, follow the SDD route and record an ADR
 change note before framework code.
 
 **Success Criteria:**
@@ -81,6 +92,8 @@ change note before framework code.
       preserves exact checksum comparison and keeps product failures distinct from environment blocks.
 - [ ] Deterministic coverage protects the identified failure mode, and targeted SPEC-004 plus the
       project gates pass without fixed sleeps or blind retries.
+- [x] Retained failure artefacts inspected; because they contain no raw frames, bounded mismatch
+      diagnostics and deterministic coverage added without weakening the five-match contract.
 
 ---
 
@@ -313,8 +326,12 @@ merge. GitHub Pages run #34532908859 succeeded, and the board is live at
 <https://gbrooks1970.github.io/bfx-ws-screenplay/>.
 
 **Update (2026-09-12):** This v14 reconciliation adds two open findings and records three subsequent
-dependency remediations, so the generated board must be refreshed in the same change and pass
+dependency remediations; the generated board was refreshed in the same change and passed
 `npm run lint:kanban` before review.
+
+**Update (2026-09-15):** The retained LIVE-01 artefacts lacked raw-frame diagnostics, so the open
+risk now records the bounded evidence added for the next recurrence. The exact five-consecutive-match
+contract and product-failure classification are unchanged.
 
 ---
 
@@ -323,7 +340,7 @@ dependency remediations, so the generated board must be refreshed in the same ch
 | Priority | Count | Total Effort | Status Distribution |
 |---|---|---|---|
 | HIGH (20–30) | 0 | — | — |
-| MEDIUM (10–19) | 1 | investigation unestimated | NEEDS INVESTIGATION (LIVE-01 — latest nightly SPEC-004 checksum failure) |
+| MEDIUM (10–19) | 1 | investigation unestimated | NEEDS INVESTIGATION (LIVE-01 — intermittent SPEC-004 failure; latest two nightlies green) |
 | LOW (0–9) | 2 | ~1 hr per maintenance action | READY TO START (Risk #1 pinned-trio drift; DEP-01 `qs` advisories) |
 | **Total Outstanding** | **3** | one investigation + recurring maintenance | |
 | Resolved | 28 | | 7 via PR #9 + 6 via PRs #11–#16 + 10 via PRs #19–#28 + 1 prior + 4 post-review dependency remediations |

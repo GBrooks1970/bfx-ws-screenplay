@@ -116,7 +116,9 @@ implementation in any language can reproduce the same expected results.
 
 The flagship assertion (SPEC-004): a locally maintained order-book replica must match the
 platform's own CRC-32 checksum frames five times consecutively — folded with buffer-index
-determinism, so each checksum is compared against exactly the updates that preceded it.
+determinism, so each checksum is compared against exactly the updates that preceded it. A
+mismatch stays a product failure and reports bounded replay evidence: the snapshot index/size,
+the five preceding mutations, and the exact local checksum input at that buffer index.
 
 Cucumber HTML/JSON reports are written to `reports/` (published as CI
 artefacts). Scenarios blocked by platform maintenance — or by a quiet market
