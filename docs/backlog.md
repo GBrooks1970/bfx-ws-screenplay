@@ -8,7 +8,7 @@
 
 # bfx-ws-screenplay — Backlog
 
-**Version:** 16 — DEP-01 resolved by an upstream-supported lockfile-only `qs` update; LIVE-01 remains open with bounded diagnostics (2026-09-15)
+**Version:** 17 — pinned-trio compatibility reviewed and held at the Node 20 support boundary; DEP-01 resolved and LIVE-01 remains open (2026-09-15)
 **Last Updated:** 2026-09-15
 **Based on:** `SPECIFICATION.md` (normative design spec), the SPEC-001..006 review packs (approved
 4–5 July 2026), code review v1 (`.review/CODE_REVIEW_CLAUDE_Fable_5_v1_20260706T1039Z/`,
@@ -111,11 +111,18 @@ deliberately old major set. Verified 12 September 2026: Cypress **16.0.0** and c
 **28.0.0** are current, and preprocessor 28 supports Cypress 16; the installed preprocessor 25
 still caps Cypress at `>=15.0.0 <=15.17.0`. Esbuild-preprocessor 2.2.8 remains current, with an
 `esbuild >=0.17.0` peer (installed 0.28.1; current 0.28.2). An isolated Cypress bump past 15.17.0
-breaks the installed peer contract, while a coordinated move crosses major versions and therefore
-requires deliberate review rather than routine lockfile churn.
+breaks the installed peer contract. A coordinated move also crosses the project's supported-runtime
+boundary: Cypress 16 requires Node `^22 || ^24 || >=26`, while ADR-009 and `package.json#engines`
+make Node 20 a checked support promise.
 **Effort:** 1 hr per deliberate upgrade
-**Status:** READY TO START (recurring maintenance, not a defect)
+**Status:** NEEDS DECISION (raising the Node floor is outside routine dependency maintenance)
 **Affected Stacks:** TypeScript/Cypress (single stack)
+
+**Update (2026-09-15):** Registry metadata confirms cucumber-preprocessor 28 accepts Cypress 16
+and esbuild-preprocessor 2.2.8 accepts esbuild `>=0.17.0`, so candidate peer compatibility is not
+the blocker. The upgrade was deliberately not installed because doing so would make the declared
+Node 20 floor false. Proceed only after an explicit Node support-floor decision and corresponding
+ADR-009/declaration reconciliation.
 
 **Problem:**
 Dependencies are exact-pinned by design (README pin table). The preprocessor's Cypress peer
@@ -124,10 +131,12 @@ upgrades must check the peer range first. The CODEX-04 audit overrides (`brace-e
 `postcss`) touch only leaf packages and do not affect this trio.
 
 **Refactor Strategy:**
-On each deliberate upgrade: check `@badeball/cypress-cucumber-preprocessor` peer range, bump the
-trio together, re-run all gates plus one live `@extended` run.
+First decide whether to retire Node 20 support. If approved, reconcile ADR-009, `package.json#engines`
+and user-facing runtime declarations; then bump Cypress/cucumber-preprocessor together, update the
+compatible esbuild pin, and re-run all gates plus one live `@extended` run.
 
 **Success Criteria:**
+- [ ] Node support-floor decision is explicit and ADR-009/declarations remain truthful.
 - [ ] Trio versions mutually compatible after any bump; gates green; README pin table updated.
 
 ---
@@ -320,6 +329,10 @@ contract and product-failure classification are unchanged.
 `@cypress/request@4.0.1` range admits patched `qs@6.16.0`, so only the lockfile changed. The audit
 is clean and the exact-pinned Cypress toolchain remained untouched in this maintenance phase.
 
+**Update (2026-09-15):** The Cypress 16/preprocessor 28 peer pair is compatible, but Cypress 16 no
+longer supports the project's promised Node 20 floor. Risk #1 therefore remains open pending an
+explicit runtime-support decision; no incompatible peer install or undeclared floor change was made.
+
 ---
 
 ## Risk Summary
@@ -328,7 +341,7 @@ is clean and the exact-pinned Cypress toolchain remained untouched in this maint
 |---|---|---|---|
 | HIGH (20–30) | 0 | — | — |
 | MEDIUM (10–19) | 1 | investigation unestimated | NEEDS INVESTIGATION (LIVE-01 — intermittent SPEC-004 failure; latest two nightlies green) |
-| LOW (0–9) | 1 | ~1 hr per maintenance action | READY TO START (Risk #1 pinned-trio drift) |
+| LOW (0–9) | 1 | ~1 hr per maintenance action | NEEDS DECISION (Risk #1 — Cypress 16 requires retiring Node 20 support) |
 | **Total Outstanding** | **2** | one investigation + recurring maintenance | |
 | Resolved | 29 | | 7 via PR #9 + 6 via PRs #11–#16 + 10 via PRs #19–#28 + 1 prior + 5 post-review dependency remediations |
 
