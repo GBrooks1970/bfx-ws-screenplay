@@ -8,8 +8,8 @@
 
 # bfx-ws-screenplay — Backlog
 
-**Version:** 17 — pinned-trio compatibility reviewed and held at the Node 20 support boundary; DEP-01 resolved and LIVE-01 remains open (2026-09-15)
-**Last Updated:** 2026-09-15
+**Version:** 18 — DEP-02 high-audit remediation implemented for review; residual audit findings tracked separately (2026-11-04)
+**Last Updated:** 2026-11-04
 **Based on:** `SPECIFICATION.md` (normative design spec), the SPEC-001..006 review packs (approved
 4–5 July 2026), code review v1 (`.review/CODE_REVIEW_CLAUDE_Fable_5_v1_20260706T1039Z/`,
 2026-07-06 — no HIGH findings), remediated by BFX-01..07 on
@@ -38,7 +38,15 @@ specification's mandatory implementation order (SPEC-001 → 006, 007 stretch).
 
 ### HIGH Priority (Score: 20–30)
 
-None.
+#### Risk DEP-02: Restore the HIGH dependency audit gate — Score: 20
+
+**Priority Score:** Security Impact (8) + Breakage Probability (8) + Maintenance Burden (4) = **20 points**
+**Status:** IN PROGRESS — compatible fixes validated locally; owner-reviewed publication pending.
+**Effort:** Bounded dependency remediation.
+**Update (2026-11-04):** Baseline audit reported four HIGH, 21 MODERATE and one LOW affected packages. Targeted npm resolution updates brace-expansion 5.0.9 -> 5.0.12, source-map-js 1.2.1 -> 1.2.2, systeminformation 5.31.12 -> 5.33.19 and undici 6.28.0 -> 6.29.1. Only the existing brace-expansion override floor changes (`^5.0.12`); direct pins and declared Node floor stay unchanged. Clean install and HIGH gate pass, with zero HIGH/CRITICAL. Typecheck/lint and 124 deterministic tests pass on Node 24 and Node 20. Residual package findings are tracked in DEP-03.
+**Acceptance:** exact-head PR CI, owner merge and exact-main CI remain publication gates; record live outcomes in the implementation log.
+**Plan:** [DEP-02](implementation-plans/2026-11-03_dep-02-high-audit-remediation.md).
+
 
 ### MEDIUM Priority (Score: 10–19)
 
@@ -99,8 +107,17 @@ change note before framework code.
 
 ### LOW Priority (Score: 0–9)
 
+#### Risk DEP-03: Residual moderate and low dependency findings — Score: 8
+
+**Priority Score:** Security Impact (3) + Breakage Probability (2) + Maintenance Burden (3) = **8 points**
+**Status:** READY TO START — triage only; no further upgrades approved.
+**Effort:** Assess supported parent updates before estimating implementation.
+**Update (2026-11-04):** After DEP-02, full audit retains 21 MODERATE and one LOW affected package entries (including dependent chains), zero HIGH/CRITICAL. Direct advisory roots include glob, minimatch, serialize-javascript and qs; the policy captures the full affected-package list. These are current findings, not reopening the historical September DEP-01 resolution. Avoid forced framework downgrades or unapproved major upgrades. Coordinate any Cypress/Node migration with Risk #1.
+**Acceptance:** document supported compatible options, reassess live advisory state and seek approval for any broader upgrade; do not silently accept residual risk.
+
+
 Risks #5–#8 (code review v1) resolved 2026-07-17; review v2 Risks #2–#6 resolved 2026-07-20 — see
-Resolved Risks below. One LOW maintenance item remains open; it is not a review finding:
+Resolved Risks below. Two LOW maintenance items remain open; it is not a review finding:
 
 #### Risk #1: Pinned-trio drift (Cypress / cucumber-preprocessor / esbuild-preprocessor) — Score: 5
 
@@ -339,10 +356,10 @@ explicit runtime-support decision; no incompatible peer install or undeclared fl
 
 | Priority | Count | Total Effort | Status Distribution |
 |---|---|---|---|
-| HIGH (20–30) | 0 | — | — |
+| HIGH (20–30) | 1 | publication pending | IN PROGRESS (DEP-02) |
 | MEDIUM (10–19) | 1 | investigation unestimated | NEEDS INVESTIGATION (LIVE-01 — intermittent SPEC-004 failure; latest two nightlies green) |
-| LOW (0–9) | 1 | ~1 hr per maintenance action | NEEDS DECISION (Risk #1 — Cypress 16 requires retiring Node 20 support) |
-| **Total Outstanding** | **2** | one investigation + recurring maintenance | |
+| LOW (0–9) | 2 | assessment unestimated | NEEDS DECISION (Risk #1 — Cypress 16 requires retiring Node 20 support); READY TO START (DEP-03 residual audit) |
+| **Total Outstanding** | **4** | remediation publication, investigation and maintenance | |
 | Resolved | 29 | | 7 via PR #9 + 6 via PRs #11–#16 + 10 via PRs #19–#28 + 1 prior + 5 post-review dependency remediations |
 
 ---

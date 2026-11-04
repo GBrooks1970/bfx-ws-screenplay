@@ -4,8 +4,8 @@ created: 2026-11-03T14:58Z
 project: bfx-ws-screenplay
 type: implementation-plan
 item: DEP-02 (proposed identifier)
-status: proposed
-approved: "not yet"
+status: approved
+approved: "2026-11-03, owner approved implementation; owner retains merge authority"
 delivered: "not yet"
 language: en-GB
 ---
@@ -82,11 +82,11 @@ Non-goals: LIVE-01 code changes; SPEC-007; Cypress major migration; retirement o
 
 | Decision | Options | Recommended | Owner's answer |
 |---|---|---|---|
-| Scope | Four HIGH-compatible fixes / coordinated toolchain migration | Four HIGH-compatible fixes | Pending |
-| Runtime promise | Preserve Node 20 / approve separate floor migration | Preserve Node 20; report pre-existing incompatibility separately if found | Pending |
-| Residual moderate/low findings | Record and triage / force major upgrades now | Record and triage separately | Pending |
-| Execution/publication | Approve scoped implementation with separate log/handover PRs / revise plan | Approve implementation; owner merges each PR | Pending |
+| Scope | Four HIGH-compatible fixes / coordinated toolchain migration | Four HIGH-compatible fixes | Approved 2026-11-03 |
+| Runtime promise | Preserve Node 20 / approve separate floor migration | Preserve Node 20; report pre-existing incompatibility separately if found | Approved 2026-11-03 |
+| Residual moderate/low findings | Record and triage / force major upgrades now | Record and triage separately | Approved 2026-11-03 |
+| Execution/publication | Approve scoped implementation with separate log/handover PRs / revise plan | Approve implementation; owner merges each PR | Approved 2026-11-03 |
 
 ## Outcome
 
-Not implemented. Investigation supports a compatible minimal-remediation route, but candidate lockfile resolution, installation and regression results remain to be established after approval.
+Implemented and locally validated on 4 November 2026. Four packages updated within supported ranges; systeminformation resolved to 5.33.19, above the approved minimum 5.33.16. HIGH/CRITICAL findings are zero; 21 MODERATE and one LOW remain under DEP-03. Node 24 and Node 20 typecheck/lint and 124 unit tests pass; live smoke 8/8 (12 s), extended 23/23 (71 s). Generated board is in sync. [Implementation log](../implementation-logs/2026-11-04_dep-02-audit-remediation.md) records evidence. Owner-reviewed project/support publication and exact-main CI remain pending; approval does not authorise automatic implementation merge.

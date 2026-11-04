@@ -24,9 +24,10 @@ npm run audit:ci   # → npm audit --audit-level=high
 
 ## Current state
 
-- **0 vulnerabilities at any severity** — both `npm audit` and `npm run audit:ci`
-  pass (15 September 2026).
-- **0 active exceptions.**
+- **2026-11-04:** zero HIGH/CRITICAL; `npm run audit:ci` passes. Full audit reports **21 MODERATE and one LOW** affected packages. This supersedes the dated 15 September zero-finding snapshot.
+- **0 active exceptions.** The HIGH threshold is unchanged; residual findings are tracked by DEP-03.
+- Affected package entries: @badeball/cypress-cucumber-preprocessor, @eslint-community/eslint-utils, @eslint/config-array, @eslint/js, @typescript-eslint/eslint-plugin, @typescript-eslint/parser, @typescript-eslint/type-utils, @typescript-eslint/typescript-estree, @typescript-eslint/utils, dependency-tree, detective-typescript, detective-vue2, eslint, find-cypress-specs, glob, minimatch, mocha, precinct, qs, serialize-javascript, spec-change and typescript-eslint. Counts include dependent packages, not distinct CVEs.
+- DEP-02 updates brace-expansion to 5.0.12 (override floor `^5.0.12`), source-map-js to 1.2.2, systeminformation to 5.33.19 and undici to 6.29.1 using existing parent ranges. Exact direct pins and Node support remain unchanged. Original audit: four HIGH, 21 MODERATE, one LOW.
 
 ## Temporary exceptions
 
