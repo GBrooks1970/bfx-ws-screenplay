@@ -186,6 +186,11 @@ export class CommunicateOverWebSocket extends Ability {
       .then((result) => result.connectionIds);
   }
 
+  /** Session provenance for bounded diagnostics; does not expose credentials. */
+  diagnosticSessionId(): string {
+    return this.requireConnectionId();
+  }
+
   private requireConnectionId(): string {
     if (!this.connectionId) {
       throw new ConfigurationError('No open connection — perform EstablishConnection first');

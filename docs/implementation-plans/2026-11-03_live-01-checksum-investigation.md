@@ -4,8 +4,8 @@ created: 2026-11-03T16:00Z
 project: bfx-ws-screenplay
 type: implementation-plan
 item: LIVE-01
-status: proposed
-approved: not yet
+status: approved
+approved: "2026-11-03, owner approved evidence/replay stage; cause-specific changes require amended plan; owner retains merge authority"
 delivered: not yet
 language: en-GB
 ---
@@ -86,12 +86,12 @@ After approval, deliver diagnostics/replay in a scoped draft project PR and sepa
 
 | Decision | Options | Recommended | Owner's answer |
 |---|---|---|---|
-| Initial scope | Evidence/replay first / speculative folding fix / defer | Evidence/replay first, conditional bounded telemetry | Pending |
-| Capture budget | 5,000 frames and 1 MiB per scenario / revise | Proposed explicit caps; truncated evidence cannot prove completeness | Pending |
-| Live execution | One targeted/extended observation after DEP-02 / repeated polling | One bounded observation, then ordinary nightly evidence | Pending |
-| Cause-specific correction | Amend plan after proof / blanket permission now | Amend plan after proof; retain Gary's feature/ADR review boundary | Pending |
-| Publication | Separate project/support draft PRs / direct main | Separate PRs, owner merge | Pending |
+| Initial scope | Evidence/replay first / speculative folding fix / defer | Evidence/replay first, conditional bounded telemetry | Approved 2026-11-03 |
+| Capture budget | 5,000 frames and 1 MiB per scenario / revise | Proposed explicit caps; truncated evidence cannot prove completeness | Approved 2026-11-03 |
+| Live execution | One targeted/extended observation after DEP-02 / repeated polling | One bounded observation, then ordinary nightly evidence | Approved 2026-11-03 |
+| Cause-specific correction | Amend plan after proof / blanket permission now | Amend plan after proof; retain Gary's feature/ADR review boundary | Approved 2026-11-03 |
+| Publication | Separate project/support draft PRs / direct main | Separate PRs, owner merge | Approved 2026-11-03 |
 
 ## Outcome
 
-Investigation completed; root cause remains unknown. The historical failure and current replay-evidence gap are verified. No implementation, tests, dependency changes or live traffic were performed. LIVE-01 remains open.
+Approved evidence/replay stage implemented on 4 November 2026 on a separate branch stacked on DEP-02. Bounded capture and replay, real question/assertion integration tests and explicit coverage inclusion are delivered. Final static/unit gates pass: 130/130 tests, 93.87% branch coverage. Live smoke 8/8 and targeted SPEC-004 4/4 passed once each; no mismatch recurred, so root cause remains unknown and LIVE-01 remains open. No folding/protocol/assertion change was made. The [evidence record](../investigations/2026-11-04_live-01-checksum-evidence.md) and [implementation log](../implementation-logs/2026-11-04_live-01-checksum-replay.md) explain the remaining cause-specific decision gate. Owner review/merge and exact-main CI remain pending.
