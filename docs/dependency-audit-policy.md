@@ -7,16 +7,16 @@ the build. It complements the exact-pin strategy in the README pin table.
 ## The gate
 
 ```
-npm run audit:ci   # → npm audit --audit-level=high
+npm run audit:ci   # â†’ npm audit --audit-level=high
 ```
 
-- **Severity threshold: `high`.** The command exits non-zero — failing the
-  build — on any advisory of **high** or **critical** severity, across runtime
+- **Severity threshold: `high`.** The command exits non-zero â€” failing the
+  build â€” on any advisory of **high** or **critical** severity, across runtime
   *and* dev dependencies (a compromised dev/test toolchain is still a supply-
   chain risk). Moderate and low findings are reported by a plain `npm audit` but
   do not fail the gate; they are triaged into the backlog instead.
-- **Where it runs:** every relevant CI path — both the `smoke` job (push / PR)
-  and the `extended` job (nightly / dispatch) in `.github/workflows/ci.yml` —
+- **Where it runs:** every relevant CI path â€” both the `smoke` job (push / PR)
+  and the `extended` job (nightly / dispatch) in `.github/workflows/ci.yml` â€”
   immediately after `npm ci`, so a vulnerable lockfile fails fast before any
   suite runs.
 - **Local:** run `npm run audit:ci` before committing a lockfile change; run a
@@ -24,9 +24,10 @@ npm run audit:ci   # → npm audit --audit-level=high
 
 ## Current state
 
-- **0 vulnerabilities at any severity** — both `npm audit` and `npm run audit:ci`
-  pass (15 September 2026).
-- **0 active exceptions.**
+- **2026-11-04:** zero HIGH/CRITICAL; `npm run audit:ci` passes. Full audit reports **21 MODERATE and one LOW** affected packages. This supersedes the dated 15 September zero-finding snapshot.
+- **0 active exceptions.** The HIGH threshold is unchanged; residual findings are tracked by DEP-03.
+- Affected package entries: @badeball/cypress-cucumber-preprocessor, @eslint-community/eslint-utils, @eslint/config-array, @eslint/js, @typescript-eslint/eslint-plugin, @typescript-eslint/parser, @typescript-eslint/type-utils, @typescript-eslint/typescript-estree, @typescript-eslint/utils, dependency-tree, detective-typescript, detective-vue2, eslint, find-cypress-specs, glob, minimatch, mocha, precinct, qs, serialize-javascript, spec-change and typescript-eslint. Counts include dependent packages, not distinct CVEs.
+- DEP-02 updates brace-expansion to 5.0.12 (override floor `^5.0.12`), source-map-js to 1.2.2, systeminformation to 5.33.19 and undici to 6.29.1 using existing parent ranges. Exact direct pins and Node support remain unchanged. Original audit: four HIGH, 21 MODERATE, one LOW.
 
 ## Temporary exceptions
 
@@ -36,11 +37,11 @@ for that advisory, never disabled wholesale. Every exception MUST carry:
 
 | Field | Meaning |
 | --- | --- |
-| Advisory | The `GHSA-…` / CVE id |
+| Advisory | The `GHSA-â€¦` / CVE id |
 | Package + path | The vulnerable package and its dependency path |
 | Owner | The person accountable for closing it |
 | Reason | Why it cannot be remediated now (no fix, breaking upstream, etc.) |
-| Expiry | A hard review date — past which the exception is invalid and must be re-justified or removed |
+| Expiry | A hard review date â€” past which the exception is invalid and must be re-justified or removed |
 | Review link | The advisory and the tracking issue/PR |
 
 An exception past its **expiry** is treated as a failure at review time: the
@@ -50,52 +51,52 @@ active exceptions today, so the gate runs unmodified.
 ## Remediation history & override rationale
 
 The two HIGH findings present before this policy were both transitive dev-only
-DoS advisories, remediated with the smallest narrowly-reviewed lockfile change —
+DoS advisories, remediated with the smallest narrowly-reviewed lockfile change â€”
 targeted `overrides` in `package.json`, no direct-pin or parent-major churn:
 
-- **`brace-expansion` → `5.0.8`** (advisories GHSA-3jxr-9vmj-r5cp,
-  GHSA-mh99-v99m-4gvg). Two vulnerable copies existed — `mocha → minimatch@9`
-  (2.x line) and `eslint → minimatch@10` (5.x line). npm's advisory range is
+- **`brace-expansion` â†’ `5.0.8`** (advisories GHSA-3jxr-9vmj-r5cp,
+  GHSA-mh99-v99m-4gvg). Two vulnerable copies existed â€” `mocha â†’ minimatch@9`
+  (2.x line) and `eslint â†’ minimatch@10` (5.x line). npm's advisory range is
   `<=5.0.7`, so **only `5.0.8` clears both**; the 2.x backport (`2.0.3`) is still
-  inside the flagged range. `brace-expansion@5.0.8` is a **dual package** — its
-  `require` conditional export resolves to a CommonJS build — so mocha's CJS
+  inside the flagged range. `brace-expansion@5.0.8` is a **dual package** â€” its
+  `require` conditional export resolves to a CommonJS build â€” so mocha's CJS
   `minimatch@9` still loads it, and its `engines` (`20 || >=22`) match the
-  project's Node ≥20 floor and CI's Node 24. A single global override forces both
+  project's Node â‰¥20 floor and CI's Node 24. A single global override forces both
   copies to `5.0.8`; `brace-expansion`'s public API (the `expand()` function) is
   unchanged across majors.
-- **`postcss` → `8.5.24`** (advisory GHSA-r28c-9q8g-f849, path-traversal). One
-  transitive copy via `@badeball/cypress-cucumber-preprocessor → find-cypress-specs
-  → … → postcss@8.5.16`; the override bumps it within the 8.x line.
-- **`js-yaml` → `^4.3.2`** (advisory GHSA-2883-xcg3-v3hh, `maxTotalMergeKeys`
-  does not limit CPU use for empty merge sources — a DoS). Supersedes the earlier
+- **`postcss` â†’ `8.5.24`** (advisory GHSA-r28c-9q8g-f849, path-traversal). One
+  transitive copy via `@badeball/cypress-cucumber-preprocessor â†’ find-cypress-specs
+  â†’ â€¦ â†’ postcss@8.5.16`; the override bumps it within the 8.x line.
+- **`js-yaml` â†’ `^4.3.2`** (advisory GHSA-2883-xcg3-v3hh, `maxTotalMergeKeys`
+  does not limit CPU use for empty merge sources â€” a DoS). Supersedes the earlier
   `^4.3.1` override taken for CVE-2026-59870 / GHSA-5p4m-2wfm-xmqj on 2026-08-07:
   the new advisory's affected range is `4.0.0 - 4.3.1`, so it **includes** the
   version that previously cleared the gate, and `4.3.2` is the first release
-  outside it. Two transitive copies, both under the pinned preprocessor —
-  `@badeball/cypress-cucumber-preprocessor → cosmiconfig@9.0.2 → js-yaml` and
-  `… → mocha@11.7.6 → js-yaml` (deduped to one install) — so a single override
+  outside it. Two transitive copies, both under the pinned preprocessor â€”
+  `@badeball/cypress-cucumber-preprocessor â†’ cosmiconfig@9.0.2 â†’ js-yaml` and
+  `â€¦ â†’ mocha@11.7.6 â†’ js-yaml` (deduped to one install) â€” so a single override
   clears both. Within the 4.x line; no API change.
-- **`browserslist` → `^4.28.8`** (advisories GHSA-c83g-rgw3-j3cx, GHSA-73wf-gq98-2v4g,
+- **`browserslist` â†’ `^4.28.8`** (advisories GHSA-c83g-rgw3-j3cx, GHSA-73wf-gq98-2v4g,
   unbounded memory growth OOM and prototype write). Transitive copy via
-  `@badeball/cypress-cucumber-preprocessor → find-cypress-specs → find-test-names →
-  @babel/core → @babel/helper-compilation-targets → browserslist@4.28.4`.
+  `@badeball/cypress-cucumber-preprocessor â†’ find-cypress-specs â†’ find-test-names â†’
+  @babel/core â†’ @babel/helper-compilation-targets â†’ browserslist@4.28.4`.
   The override forces `browserslist` to `4.28.8`, clearing both advisories while
   remaining fully compatible with Node 20 and CI Node 24 (`node: >=13.7`).
-- **`qs` → `6.16.0`** (advisories GHSA-x5fp-wj9c-mxmx and
-  GHSA-4mjr-xmp4-gh2g). The transitive path is `cypress@15.17.0 →
-  @cypress/request@4.0.1 → qs`; the parent declares `qs@^6.15.2`, so a
+- **`qs` â†’ `6.16.0`** (advisories GHSA-x5fp-wj9c-mxmx and
+  GHSA-4mjr-xmp4-gh2g). The transitive path is `cypress@15.17.0 â†’
+  @cypress/request@4.0.1 â†’ qs`; the parent declares `qs@^6.15.2`, so a
   lockfile-only update selected the patched release without an override or a
   direct dependency.
 
-Both paths are exercised in CI: `eslint → minimatch → brace-expansion` by
-`npm run lint`, and `mocha → minimatch → brace-expansion` (feature-file globbing
+Both paths are exercised in CI: `eslint â†’ minimatch â†’ brace-expansion` by
+`npm run lint`, and `mocha â†’ minimatch â†’ brace-expansion` (feature-file globbing
 in the cucumber preprocessor) by `npm run test:smoke`.
 
 ## Relationship to the pinned trio
 
 The audit remediations above touch only transitive packages and do **not**
 change the deliberately exact-pinned compatibility
-trio — `cypress`, `@badeball/cypress-cucumber-preprocessor`,
+trio â€” `cypress`, `@badeball/cypress-cucumber-preprocessor`,
 `@bahmutov/cypress-esbuild-preprocessor` (+ `esbuild`). That trio is governed by
 backlog **Risk #1 (pinned-trio drift)**: the preprocessor caps Cypress at
 `<=15.17.0`, so the trio is bumped only together after checking the peer range.

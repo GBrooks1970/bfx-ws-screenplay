@@ -3,37 +3,37 @@
 [![ci](https://github.com/GBrooks1970/bfx-ws-screenplay/actions/workflows/ci.yml/badge.svg)](https://github.com/GBrooks1970/bfx-ws-screenplay/actions/workflows/ci.yml)
 
 WebSocket test automation against the **Bitfinex public WebSocket API v2**
-(`wss://api-pub.bitfinex.com/ws/2`) — Cypress, TypeScript, Cucumber BDD and an
+(`wss://api-pub.bitfinex.com/ws/2`) â€” Cypress, TypeScript, Cucumber BDD and an
 in-house Screenplay pattern, built under Specification Driven Development.
 
 Public channels only: no trading, no authentication, no API keys.
 
 ## What this demonstrates
 
-- **WebSocket API testing against a live financial exchange** — protocol
+- **WebSocket API testing against a live financial exchange** â€” protocol
   conformance, schema validity and invariants over a non-deterministic feed
   (never market-value assertions; see ADR-004).
-- **Tool adaptation** — Cypress's browser-hosted command queue cannot own a raw
+- **Tool adaptation** â€” Cypress's browser-hosted command queue cannot own a raw
   socket, so the WebSocket client lives in the Cypress Node process behind a
   `cy.task()` bridge with a serialisable predicate DSL (ADR-001,
   `docs/predicate-dsl.md`). Message streams become a queryable buffer: Questions
   poll a synchronously assertable log instead of listening to events.
-- **The Screenplay pattern, implemented rather than imported** — a
+- **The Screenplay pattern, implemented rather than imported** â€” a
   Cypress-adapted derivative of my
   [hand-baked-screenplay-pattern](https://github.com/GBrooks1970/hand-baked-screenplay-pattern)
-  library (promise-native there; chainable-native here — see ADR-002).
-- **BDD as the executable specification** — Gherkin feature files are the
+  library (promise-native there; chainable-native here â€” see ADR-002).
+- **BDD as the executable specification** â€” Gherkin feature files are the
   source of behavioural truth; step definitions delegate only (ADR-003), with
   assertions expressed as `Ensure.that(question, expectation)`.
-- **Specification Driven Development** — the project is implemented unit by
+- **Specification Driven Development** â€” the project is implemented unit by
   unit from a written design specification, with live-docs verification before
   each unit and review gates before code.
 
 ## Architecture
 
 ```
-Layer 1  Gherkin feature files          (WHAT — business/behaviour language)
-Layer 2  Step definitions               (glue only — no logic)
+Layer 1  Gherkin feature files          (WHAT â€” business/behaviour language)
+Layer 2  Step definitions               (glue only â€” no logic)
 Layer 3  Screenplay: Tasks & Questions  (HOW, in domain terms)
 Layer 4  Screenplay: Abilities          (capability wrappers over the bridge)
 Layer 5  cy.task bridge                 (named task contracts)
@@ -41,8 +41,8 @@ Layer 6  Node WebSocket driver          (ws client, session registry, buffers)
 Layer 7  System under test              (wss://api-pub.bitfinex.com/ws/2)
 ```
 
-Downward dependencies only. Layers 1–3 speak domain vocabulary (subscribe,
-ticker, order book); layers 5–6 speak transport vocabulary (frame, socket,
+Downward dependencies only. Layers 1â€“3 speak domain vocabulary (subscribe,
+ticker, order book); layers 5â€“6 speak transport vocabulary (frame, socket,
 buffer); layer 4 translates.
 
 ## Architecture decision records
@@ -52,7 +52,7 @@ buffer); layer 4 translates.
 | [ADR-001](docs/adr/ADR-001-cypress-node-side-websocket-driver.md) | WebSocket client in the Cypress Node process, bridged exclusively via `cy.task()` |
 | [ADR-002](docs/adr/ADR-002-screenplay-in-house.md) | Screenplay implemented in-house (derived from hand-baked-screenplay-pattern), not Serenity/JS |
 | [ADR-003](docs/adr/ADR-003-cucumber-preprocessor.md) | `@badeball/cypress-cucumber-preprocessor`; step definitions delegate only |
-| [ADR-004](docs/adr/ADR-004-assertion-strategy-live-data.md) | Protocol/schema/invariant assertions only — market-value equality prohibited |
+| [ADR-004](docs/adr/ADR-004-assertion-strategy-live-data.md) | Protocol/schema/invariant assertions only â€” market-value equality prohibited |
 | [ADR-005](docs/adr/ADR-005-time-and-flake-policy.md) | Bounded condition-waits with named timeout constants; no fixed sleeps; distinct environment-blocked outcome |
 | [ADR-006](docs/adr/ADR-006-book-depth-transient-overshoot-margin.md) | Book-depth purity check allows a documented one-frame transient overshoot (25 subscribed / 30 allowed) |
 | [ADR-010](docs/adr/ADR-010-quiet-window-classification-and-gating.md) | Quiet-window classification on every channel, and the build gate that passes a run whose only failures are environment-blocked |
@@ -61,12 +61,12 @@ buffer); layer 4 translates.
 
 | Unit | Behaviour | Status |
 |---|---|---|
-| SPEC-001 | Connection lifecycle & framework skeleton | ✅ Done |
-| SPEC-002 | Ticker channel | ✅ Done |
-| SPEC-003 | Trades channel | ✅ Done |
-| SPEC-004 | Order book channel & checksum verification (flagship) | ✅ Done |
-| SPEC-005 | Candles channel | ✅ Done |
-| SPEC-006 | Negative paths & unsubscription | ✅ Done |
+| SPEC-001 | Connection lifecycle & framework skeleton | âœ… Done |
+| SPEC-002 | Ticker channel | âœ… Done |
+| SPEC-003 | Trades channel | âœ… Done |
+| SPEC-004 | Order book channel & checksum verification (flagship) | âœ… Done |
+| SPEC-005 | Candles channel | âœ… Done |
+| SPEC-006 | Negative paths & unsubscription | âœ… Done |
 | SPEC-007 | Sequencing | Stretch (out of initial scope) |
 
 ## How to run
@@ -74,14 +74,14 @@ buffer); layer 4 translates.
 Requires **Node 20+** (the supported minimum, `package.json#engines`); the
 development and CI baseline is **Node 24** (`.nvmrc`, `setup-node`). The static
 and unit gates run on the Node 20 floor; the branch-coverage gate needs
-Node ≥ 22.8 and runs on the CI baseline. See
+Node â‰¥ 22.8 and runs on the CI baseline. See
 [ADR-009](docs/adr/ADR-009-node-support-baseline.md).
 
 ```sh
 npm ci
 npm run test:unit       # deterministic TypeScript unit suite (node:test, no network)
 npm run test:smoke      # @smoke scenarios (SPEC-001, SPEC-002)
-npm run test:extended   # full tagged suite — nightly in CI, or dispatched with suite=extended
+npm run test:extended   # full tagged suite â€” nightly in CI, or dispatched with suite=extended
 npm run lint
 npm run typecheck
 npm run audit:ci        # dependency-audit gate (see docs/dependency-audit-policy.md)
@@ -90,7 +90,7 @@ npm run audit:ci        # dependency-audit gate (see docs/dependency-audit-polic
 ### Deterministic unit tests
 
 `npm run test:unit` runs the pure-logic suite in [`test/unit/`](test/unit) on
-Node's built-in `node:test` runner via `tsx` — **no new dependencies, no
+Node's built-in `node:test` runner via `tsx` â€” **no new dependencies, no
 network, no browser**. It covers the checksum serialiser (SPEC-004 / ADR-007),
 the book diagnostic projection, the trade-starvation classifier (ADR-008), the
 generalised quiet-window classifier and the environment-blocked build gate
@@ -100,29 +100,29 @@ shim ([`test/unit/_all.test.ts`](test/unit/_all.test.ts)) loads every sibling
 `*.test.ts`, so the suite needs no glob support and runs identically on the Node
 20 floor and CI's Node 24.
 
-`npm run test:unit:coverage` additionally enforces a **≥80 % branch-coverage
-floor** over the critical pure surface — the predicate matcher, every message
+`npm run test:unit:coverage` additionally enforces a **â‰¥80 % branch-coverage
+floor** over the critical pure surface â€” the predicate matcher, every message
 schema guard, the book maintenance/checksum/invariant modules, the error
 taxonomy, the trade-stream classifier, and the WebSocket driver lifecycle
-(exercised through an injected socket/clock seam, no real socket) — and is the
+(exercised through an injected socket/clock seam, no real socket) â€” and is the
 gate CI runs before every Cypress suite. It uses Node's `--test-coverage-*` flags, which require the
-**Node 24 CI baseline** (Node ≥ 22.8); on the Node 20 floor use `npm run
+**Node 24 CI baseline** (Node â‰¥ 22.8); on the Node 20 floor use `npm run
 test:unit`, which reports and runs everywhere.
 
 Representative protocol frames and the checksum contract are pinned as
-**language-neutral JSON fixtures** in [`test/fixtures/`](test/fixtures) — traceable
-to the Bitfinex docs and dated live probes, no secrets — so a future
+**language-neutral JSON fixtures** in [`test/fixtures/`](test/fixtures) â€” traceable
+to the Bitfinex docs and dated live probes, no secrets â€” so a future
 implementation in any language can reproduce the same expected results.
 
 The flagship assertion (SPEC-004): a locally maintained order-book replica must match the
-platform's own CRC-32 checksum frames five times consecutively — folded with buffer-index
+platform's own CRC-32 checksum frames five times consecutively â€” folded with buffer-index
 determinism, so each checksum is compared against exactly the updates that preceded it. A
 mismatch stays a product failure and reports bounded replay evidence: the snapshot index/size,
 the five preceding mutations, and the exact local checksum input at that buffer index.
 
 Cucumber HTML/JSON reports are written to `reports/` (published as CI
-artefacts). Scenarios blocked by platform maintenance — or by a quiet market
-that delivered no frame inside a bounded window — abort as
+artefacts). Scenarios blocked by platform maintenance â€” or by a quiet market
+that delivered no frame inside a bounded window â€” abort as
 **environment-blocked** (`EnvironmentBlockedError`), distinguishable in the
 report from product failures.
 
@@ -139,7 +139,7 @@ silently green.
 connection per scenario, torn down unconditionally in an `After` hook.
 
 The `smoke` job also runs on every `pull_request`, including PRs opened from a
-fork — the trigger is left unrestricted (code review v2, Risk #6) rather than
+fork â€” the trigger is left unrestricted (code review v2, Risk #6) rather than
 scoped to trusted branches only, so a fork PR's `smoke` run does exercise the
 live public Bitfinex API using this repository's Actions minutes before a
 maintainer reviews the diff. No secrets or write credentials are exposed to
@@ -161,17 +161,17 @@ to drift independently, so upgrades are deliberate.
 | `typescript` | 5.9.3 | Strict mode throughout |
 | `ws` | 8.21.0 | The Node-side WebSocket client (ADR-001) |
 
-`overrides` in `package.json` force patched transitive dev-only dependencies —
-`diff`/`serialize-javascript` inside mocha's tree, plus `brace-expansion` (5.0.8)
+`overrides` in `package.json` force patched transitive dev-only dependencies â€”
+`diff`/`serialize-javascript` inside mocha's tree, plus `brace-expansion` (5.0.12)
 and `postcss` (8.5.24) to clear two HIGH DoS/path-traversal advisories. The trio
 above is untouched. The lockfile resolves transitive `@cypress/request` dependency
-`qs` to patched 6.16.0 through its supported range. `npm audit`: **0 vulnerabilities**.
+`qs` to patched 6.16.0 through its supported range. As of 4 November 2026, the HIGH gate passes with **zero HIGH/CRITICAL**; full audit retains **21 MODERATE and one LOW** affected packages (DEP-03). DEP-02 also refreshes source-map-js, systeminformation and undici within supported ranges.
 
-A dependency-audit gate — `npm run audit:ci` (`npm audit --audit-level=high`) —
+A dependency-audit gate â€” `npm run audit:ci` (`npm audit --audit-level=high`) â€”
 runs in both CI jobs and fails the build on any unexcepted HIGH+ finding. The
 threshold, and the owner/expiry protocol for any temporary exception, are in
 [docs/dependency-audit-policy.md](docs/dependency-audit-policy.md).
 
 ## Licence
 
-[MIT](LICENSE) — © 2026 Gary Brooks
+[MIT](LICENSE) â€” Â© 2026 Gary Brooks
