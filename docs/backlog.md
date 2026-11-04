@@ -8,7 +8,7 @@
 
 # bfx-ws-screenplay — Backlog
 
-**Version:** 18 — DEP-02 high-audit remediation implemented for review; residual audit findings tracked separately (2026-11-04)
+**Version:** 19 — LIVE-01 bounded replay/diagnostics implemented for review; root cause remains unknown (2026-11-04)
 **Last Updated:** 2026-11-04
 **Based on:** `SPECIFICATION.md` (normative design spec), the SPEC-001..006 review packs (approved
 4–5 July 2026), code review v1 (`.review/CODE_REVIEW_CLAUDE_Fable_5_v1_20260706T1039Z/`,
@@ -63,8 +63,11 @@ the locally maintained order book, followed by three matches. The remaining 22 o
 scenarios passed. ADR-010 correctly classified the outcome as one product failure and zero
 environment-blocked outcomes, so this is not eligible for the quiet-window pass-through.
 **Effort:** Unknown until the frame-ordering and book-fold root cause is reproduced
-**Status:** NEEDS INVESTIGATION (latest two default-branch nightlies green; intermittent failure unresolved)
+**Status:** NEEDS INVESTIGATION (bounded replay/diagnostics delivered for review; root cause unresolved)
 **Affected Stacks:** TypeScript/Cypress live Bitfinex WebSocket lane (SPEC-004)
+
+**Update (2026-11-04):** Approved Action 5 adds bounded mismatch-only replay evidence and deterministic replay validation. 130 unit tests pass; one live targeted SPEC-004 run passed 4/4 (27 s), with no recurrence. This does not resolve LIVE-01. Existing first-five assertions, folding and ADR-010 classification are unchanged. See [evidence and replay](investigations/2026-11-04_live-01-checksum-evidence.md) and [implementation log](implementation-logs/2026-11-04_live-01-checksum-replay.md). Dependency remediation is separate PR #45; this branch is stacked on it pending owner merge.
+
 
 **Update (2026-09-12):** The same `main` SHA (`e2406b0`) passed the preceding scheduled extended run
 [#34555150107](https://github.com/GBrooks1970/bfx-ws-screenplay/actions/runs/34555150107)
@@ -357,7 +360,7 @@ explicit runtime-support decision; no incompatible peer install or undeclared fl
 | Priority | Count | Total Effort | Status Distribution |
 |---|---|---|---|
 | HIGH (20–30) | 1 | publication pending | IN PROGRESS (DEP-02) |
-| MEDIUM (10–19) | 1 | investigation unestimated | NEEDS INVESTIGATION (LIVE-01 — intermittent SPEC-004 failure; latest two nightlies green) |
+| MEDIUM (10–19) | 1 | investigation unestimated | NEEDS INVESTIGATION (LIVE-01 — replay/diagnostics ready for review; cause unknown) |
 | LOW (0–9) | 2 | assessment unestimated | NEEDS DECISION (Risk #1 — Cypress 16 requires retiring Node 20 support); READY TO START (DEP-03 residual audit) |
 | **Total Outstanding** | **4** | remediation publication, investigation and maintenance | |
 | Resolved | 29 | | 7 via PR #9 + 6 via PRs #11–#16 + 10 via PRs #19–#28 + 1 prior + 5 post-review dependency remediations |

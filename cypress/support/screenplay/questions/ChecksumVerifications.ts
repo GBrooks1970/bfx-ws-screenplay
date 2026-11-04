@@ -5,6 +5,7 @@ import { AssertionError, Question } from '../core';
 import { onChannelObservationTimeout } from '../streams';
 import { extractBookFrames } from './bookFolding';
 import { verifyChecksumAtIndex, type ChecksumVerification } from './checksumDiagnostics';
+import { attachChecksumReplay, captureChecksumReplay } from './checksumReplay';
 
 export type { ChecksumVerification } from './checksumDiagnostics';
 
@@ -51,7 +52,8 @@ export class ChecksumVerifications {
             )
             .then((dataFrames): ChecksumVerification[] => {
               const log = extractBookFrames(dataFrames);
-              return csFrames.slice(0, count).map((buffered) => {
+              const selected = csFrames.slice(0, count);
+              const results = selected.map((buffered) => {
                 // Predicate selection already matched [chanId,'cs',...]; the guard
                 // validates the exact frame shape before we trust frame[2].
                 if (!isBookChecksumFrame(buffered.frame, chanId)) {
@@ -66,6 +68,15 @@ export class ChecksumVerifications {
                   buffered.index,
                   buffered.frame[2],
                 );
+              });
+              return attachChecksumReplay(results, (byteBudget) => {
+                const sessionId = ws.diagnosticSessionId();
+                const throughIndex = selected[selected.length - 1]!.index;
+                const frames = [...dataFrames, ...selected]
+                  .filter((entry) => entry.index <= throughIndex)
+                  .sort((a, b) => a.index - b.index)
+                  .map(({ index, frame }) => ({ sessionId, index, frame }));
+                return captureChecksumReplay(sessionId, chanId, throughIndex, frames, byteBudget);
               });
             }),
         );

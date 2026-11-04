@@ -1,5 +1,6 @@
 import { bookChecksum, checksumString, foldBook } from '../../books';
 import type { BookLevel } from '../../../schemas';
+import type { ChecksumReplay } from './checksumReplay';
 
 const PRECEDING_MUTATION_LIMIT = 5;
 
@@ -23,6 +24,7 @@ export type ChecksumVerification = {
   actual: number;
   csIndex: number;
   mismatch?: ChecksumMismatchDiagnostic;
+  replay?: ChecksumReplay;
 };
 
 /**
