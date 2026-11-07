@@ -8,8 +8,8 @@
 
 # bfx-ws-screenplay — Backlog
 
-**Version:** 19 — LIVE-01 bounded replay/diagnostics implemented for review; root cause remains unknown (2026-11-04)
-**Last Updated:** 2026-11-04
+**Version:** 20 — merged repairs reconciled; compatible DEP-03 fixes validated for review (2026-11-07)
+**Last Updated:** 2026-11-07
 **Based on:** `SPECIFICATION.md` (normative design spec), the SPEC-001..006 review packs (approved
 4–5 July 2026), code review v1 (`.review/CODE_REVIEW_CLAUDE_Fable_5_v1_20260706T1039Z/`,
 2026-07-06 — no HIGH findings), remediated by BFX-01..07 on
@@ -38,15 +38,7 @@ specification's mandatory implementation order (SPEC-001 → 006, 007 stretch).
 
 ### HIGH Priority (Score: 20–30)
 
-#### Risk DEP-02: Restore the HIGH dependency audit gate — Score: 20
-
-**Priority Score:** Security Impact (8) + Breakage Probability (8) + Maintenance Burden (4) = **20 points**
-**Status:** IN PROGRESS — compatible fixes validated locally; owner-reviewed publication pending.
-**Effort:** Bounded dependency remediation.
-**Update (2026-11-04):** Baseline audit reported four HIGH, 21 MODERATE and one LOW affected packages. Targeted npm resolution updates brace-expansion 5.0.9 -> 5.0.12, source-map-js 1.2.1 -> 1.2.2, systeminformation 5.31.12 -> 5.33.19 and undici 6.28.0 -> 6.29.1. Only the existing brace-expansion override floor changes (`^5.0.12`); direct pins and declared Node floor stay unchanged. Clean install and HIGH gate pass, with zero HIGH/CRITICAL. Typecheck/lint and 124 deterministic tests pass on Node 24 and Node 20. Residual package findings are tracked in DEP-03.
-**Acceptance:** exact-head PR CI, owner merge and exact-main CI remain publication gates; record live outcomes in the implementation log.
-**Plan:** [DEP-02](implementation-plans/2026-11-03_dep-02-high-audit-remediation.md).
-
+None. DEP-02 was merged and verified on main; see Resolved Risks.
 
 ### MEDIUM Priority (Score: 10–19)
 
@@ -63,8 +55,10 @@ the locally maintained order book, followed by three matches. The remaining 22 o
 scenarios passed. ADR-010 correctly classified the outcome as one product failure and zero
 environment-blocked outcomes, so this is not eligible for the quiet-window pass-through.
 **Effort:** Unknown until the frame-ordering and book-fold root cause is reproduced
-**Status:** NEEDS INVESTIGATION (bounded replay/diagnostics delivered for review; root cause unresolved)
+**Status:** NEEDS INVESTIGATION (bounded replay/diagnostics merged; root cause unresolved)
 **Affected Stacks:** TypeScript/Cypress live Bitfinex WebSocket lane (SPEC-004)
+
+**Update (2026-11-07):** Diagnostics merged in [PR #46](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/46) as `7ff0666`; exact-main [CI #41821894699](https://github.com/GBrooks1970/bfx-ws-screenplay/actions/runs/41821894699) passed. Scheduled runs #42002810757 (5 November), #42194820030 (6 November) and [#42356953710](https://github.com/GBrooks1970/bfx-ws-screenplay/actions/runs/42356953710) (7 November) succeeded. Workflow success is not causal evidence and can include ADR-010 environment blocks; no new mismatch evidence was established in this review. Keep LIVE-01 open and preserve the five-match assertion.
 
 **Update (2026-11-04):** Approved Action 5 adds bounded mismatch-only replay evidence and deterministic replay validation. 130 unit tests pass; one live targeted SPEC-004 run passed 4/4 (27 s), with no recurrence. This does not resolve LIVE-01. Existing first-five assertions, folding and ADR-010 classification are unchanged. See [evidence and replay](investigations/2026-11-04_live-01-checksum-evidence.md) and [implementation log](implementation-logs/2026-11-04_live-01-checksum-replay.md). Dependency remediation is separate PR #45; this branch is stacked on it pending owner merge.
 
@@ -113,8 +107,10 @@ change note before framework code.
 #### Risk DEP-03: Residual moderate and low dependency findings — Score: 8
 
 **Priority Score:** Security Impact (3) + Breakage Probability (2) + Maintenance Burden (3) = **8 points**
-**Status:** READY TO START — triage only; no further upgrades approved.
+**Status:** IN PROGRESS — two compatible resolutions validated for owner review; residual chains remain open.
 **Effort:** Assess supported parent updates before estimating implementation.
+**Update (2026-11-07):** Within existing manifest ranges, the lockfile now resolves `qs` 6.16.0 → 6.17.1 and `serialize-javascript` 7.0.7 → 7.1.4. Fresh full audit reports **19 MODERATE, zero LOW/HIGH/CRITICAL** affected package entries; the HIGH gate passes. Remaining direct advisory roots are glob and minimatch, with dependent chains. npm's proposed preprocessor fix is a major downgrade to 15.1.4, so it is not applied automatically. Direct pins, overrides and Node >=20 remain unchanged. Typecheck, lint, 130/130 unit tests and coverage pass; Node 20 also passes 130/130 and typecheck. This is partial remediation, not residual-risk acceptance. See the [plan](implementation-plans/2026-11-07_dep-03-compatible-fixes-and-status.md).
+
 **Update (2026-11-04):** After DEP-02, full audit retains 21 MODERATE and one LOW affected package entries (including dependent chains), zero HIGH/CRITICAL. Direct advisory roots include glob, minimatch, serialize-javascript and qs; the policy captures the full affected-package list. These are current findings, not reopening the historical September DEP-01 resolution. Avoid forced framework downgrades or unapproved major upgrades. Coordinate any Cypress/Node migration with Risk #1.
 **Acceptance:** document supported compatible options, reassess live advisory state and seek approval for any broader upgrade; do not silently accept residual risk.
 
@@ -164,6 +160,11 @@ compatible esbuild pin, and re-run all gates plus one live `@extended` run.
 ---
 
 ### Resolved Risks
+
+#### Risk DEP-02: Restore the HIGH dependency audit gate ✅ Resolved 2026-11-04
+
+**Resolution:** [PR #45](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/45) merged as `ee856a1472d2e588d3a557aa4444bc4a0f9c7071`. Exact-main [CI #41821470848](https://github.com/GBrooks1970/bfx-ws-screenplay/actions/runs/41821470848) and [Pages #41821470842](https://github.com/GBrooks1970/bfx-ws-screenplay/actions/runs/41821470842) succeeded. The compatible brace-expansion, source-map-js, systeminformation and undici repairs cleared HIGH/CRITICAL findings while retaining direct pins and the Node floor. Publication was verified on 7 November; the prior IN PROGRESS label was stale. Residual findings remain in DEP-03.
+**See:** [plan](implementation-plans/2026-11-03_dep-02-high-audit-remediation.md); [audit policy](dependency-audit-policy.md).
 
 #### Risk DEP-01: `qs` moderate advisories below the HIGH audit threshold ✅ Resolved 2026-09-15
 
@@ -359,11 +360,11 @@ explicit runtime-support decision; no incompatible peer install or undeclared fl
 
 | Priority | Count | Total Effort | Status Distribution |
 |---|---|---|---|
-| HIGH (20–30) | 1 | publication pending | IN PROGRESS (DEP-02) |
-| MEDIUM (10–19) | 1 | investigation unestimated | NEEDS INVESTIGATION (LIVE-01 — replay/diagnostics ready for review; cause unknown) |
-| LOW (0–9) | 2 | assessment unestimated | NEEDS DECISION (Risk #1 — Cypress 16 requires retiring Node 20 support); READY TO START (DEP-03 residual audit) |
-| **Total Outstanding** | **4** | remediation publication, investigation and maintenance | |
-| Resolved | 29 | | 7 via PR #9 + 6 via PRs #11–#16 + 10 via PRs #19–#28 + 1 prior + 5 post-review dependency remediations |
+| HIGH (20–30) | 0 | — | DEP-02 merged and verified |
+| MEDIUM (10–19) | 1 | investigation unestimated | NEEDS INVESTIGATION (LIVE-01 — replay/diagnostics merged; cause unknown) |
+| LOW (0–9) | 2 | assessment unestimated | NEEDS DECISION (Risk #1 — Cypress 16 requires retiring Node 20 support); IN PROGRESS (DEP-03 partial repair; residual audit open) |
+| **Total Outstanding** | **3** | investigation and dependency maintenance | |
+| Resolved | 30 | | 7 via PR #9 + 6 via PRs #11–#16 + 10 via PRs #19–#28 + 1 prior + 6 post-review dependency remediations |
 
 ---
 

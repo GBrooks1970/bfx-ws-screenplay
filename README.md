@@ -165,7 +165,7 @@ to drift independently, so upgrades are deliberate.
 `diff`/`serialize-javascript` inside mocha's tree, plus `brace-expansion` (5.0.12)
 and `postcss` (8.5.24) to clear two HIGH DoS/path-traversal advisories. The trio
 above is untouched. The lockfile resolves transitive `@cypress/request` dependency
-`qs` to patched 6.16.0 through its supported range. As of 4 November 2026, the HIGH gate passes with **zero HIGH/CRITICAL**; full audit retains **21 MODERATE and one LOW** affected packages (DEP-03). DEP-02 also refreshes source-map-js, systeminformation and undici within supported ranges.
+`qs` to patched 6.17.1 through its supported range; the existing mocha override resolves `serialize-javascript` to 7.1.4. As of 7 November 2026, the HIGH gate passes with **zero HIGH/CRITICAL**; full audit retains **19 MODERATE and zero LOW** affected packages (DEP-03). DEP-02 also refreshes source-map-js, systeminformation and undici within supported ranges.
 
 A dependency-audit gate — `npm run audit:ci` (`npm audit --audit-level=high`) —
 runs in both CI jobs and fails the build on any unexcepted HIGH+ finding. The
