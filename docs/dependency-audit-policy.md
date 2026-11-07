@@ -24,10 +24,12 @@ npm run audit:ci   # → npm audit --audit-level=high
 
 ## Current state
 
-- **2026-11-04:** zero HIGH/CRITICAL; `npm run audit:ci` passes. Full audit reports **21 MODERATE and one LOW** affected packages. This supersedes the dated 15 September zero-finding snapshot.
-- **0 active exceptions.** The HIGH threshold is unchanged; residual findings are tracked by DEP-03.
-- Affected package entries: @badeball/cypress-cucumber-preprocessor, @eslint-community/eslint-utils, @eslint/config-array, @eslint/js, @typescript-eslint/eslint-plugin, @typescript-eslint/parser, @typescript-eslint/type-utils, @typescript-eslint/typescript-estree, @typescript-eslint/utils, dependency-tree, detective-typescript, detective-vue2, eslint, find-cypress-specs, glob, minimatch, mocha, precinct, qs, serialize-javascript, spec-change and typescript-eslint. Counts include dependent packages, not distinct CVEs.
-- DEP-02 updates brace-expansion to 5.0.12 (override floor `^5.0.12`), source-map-js to 1.2.2, systeminformation to 5.33.19 and undici to 6.29.1 using existing parent ranges. Exact direct pins and Node support remain unchanged. Original audit: four HIGH, 21 MODERATE, one LOW.
+- **2026-11-07:** zero HIGH/CRITICAL/LOW; `npm run audit:ci` passes. Full audit reports **19 MODERATE** affected package entries (including dependent chains, not distinct CVEs). This supersedes the 4 November snapshot of 21 MODERATE and one LOW.
+- **0 active exceptions.** The HIGH threshold remains unchanged; DEP-03 remains open and is not an acceptance of residual risk.
+- Affected package entries: @badeball/cypress-cucumber-preprocessor, @eslint/config-array, @eslint/js, @typescript-eslint/eslint-plugin, @typescript-eslint/parser, @typescript-eslint/type-utils, @typescript-eslint/typescript-estree, @typescript-eslint/utils, dependency-tree, detective-typescript, detective-vue2, eslint, find-cypress-specs, glob, minimatch, mocha, precinct, spec-change, typescript-eslint.
+- DEP-02 was merged in PR #45 (`ee856a1`); exact-main CI #41821470848 passed. Compatible resolutions repaired brace-expansion, source-map-js, systeminformation and undici.
+- DEP-03 now resolves `qs` 6.17.1 and `serialize-javascript` 7.1.4 within the existing ranges. Only those two lockfile package objects change; no manifest, override, direct pin or Node floor changes.
+- Remaining advisory roots: [glob GHSA-3g3m-2fjr-6pw4](https://github.com/advisories/GHSA-3g3m-2fjr-6pw4) (affected 9.0.0–14.0.1) and [minimatch GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249) (affected >=7.0.0 <11.0.1). Existing installed parent ranges do not supply patched versions. npm proposes a major preprocessor downgrade to 15.1.4; that is outside this bounded repair and has not been applied. Reassess supported parent releases before any broader migration; coordinate runtime changes with Risk #1.
 
 ## Temporary exceptions
 
