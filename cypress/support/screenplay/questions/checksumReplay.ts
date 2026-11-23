@@ -27,7 +27,17 @@ export function captureChecksumReplay(
   frames: readonly ReplayFrame[],
   byteBudget = MAX_BYTES,
 ): ChecksumReplay {
-  const prefix = frames.filter((entry) => entry.index <= throughIndex);
+  // Drop an exact repeat of the previous entry (same index and same frame). A
+  // different frame under a repeated index is kept, so replay still fails closed.
+  const prefix = frames.filter(
+    (entry, i) =>
+      entry.index <= throughIndex &&
+      !(
+        i > 0 &&
+        frames[i - 1]!.index === entry.index &&
+        JSON.stringify(frames[i - 1]!.frame) === JSON.stringify(entry.frame)
+      ),
+  );
   const envelope: ChecksumReplay = {
     version: 1,
     sessionId,

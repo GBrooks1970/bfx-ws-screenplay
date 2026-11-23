@@ -4,13 +4,16 @@ import {
   attachChecksumReplay,
   captureChecksumReplay,
   replayChecksums,
+  type ChecksumReplay,
   type ReplayFrame,
 } from '../../cypress/support/screenplay/questions/checksumReplay';
+import liveRecurrence from '../fixtures/live-01/2026-11-23_run-45159119472.json' with { type: 'json' };
 import { satisfies } from '../../cypress/support/screenplay/core/Ensure';
 import { Actor } from '../../cypress/support/screenplay/core/Actor';
 import { CommunicateOverWebSocket } from '../../cypress/support/screenplay/abilities/CommunicateOverWebSocket';
 import { ChecksumVerifications } from '../../cypress/support/screenplay/questions/ChecksumVerifications';
-import type { BufferedFrame } from '../../node-driver/protocol';
+import type { BufferedFrame, PredicateSpec } from '../../node-driver/protocol';
+import { frameMatches } from '../../node-driver/predicates';
 
 // Independently calculated with Python zlib.crc32, signed int32:
 // '100:2:101:-2' => 599066899; '100:3:101:-2' => -283178611.
@@ -42,10 +45,13 @@ describe('bounded checksum replay', () => {
     actor.remembers('book:chanId', 7);
     t.mock.method(ws, 'diagnosticSessionId', () => 's1');
     let calls = 0;
-    t.mock.method(ws, 'messagesWhere', () => {
-      const checksums = calls++ === 0;
+    // Select through the production predicate, exactly as the driver buffer does. A
+    // `frameType: 'data'` query excludes only heartbeats, so it also returns the `cs`
+    // frames; an earlier hand-written filter hid that and let the capture duplicate them.
+    t.mock.method(ws, 'messagesWhere', (spec: PredicateSpec) => {
+      calls += 1;
       const selected: BufferedFrame[] = input
-        .filter((entry) => Array.isArray(entry.frame) && (entry.frame[1] === 'cs') === checksums)
+        .filter((entry) => frameMatches(entry.frame, spec))
         .map(({ index, frame }) => ({ index, frame, receivedAt: index }));
       return Promise.resolve(selected) as unknown as Cypress.Chainable<BufferedFrame[]>;
     });
@@ -54,6 +60,8 @@ describe('bounded checksum replay', () => {
     ) as unknown as Promise<ReturnType<typeof replayChecksums>>);
     assert.equal(calls, 2);
     assert.equal(result[0]!.replay?.capturedFrames, 4);
+    const indexes = result[0]!.replay!.frames.map((entry) => entry.index);
+    assert.deepEqual(indexes, [...new Set(indexes)], 'each buffer index is captured once');
     assert.equal(result[1]!.replay, undefined);
     assert.throws(
       () =>
@@ -159,6 +167,43 @@ describe('bounded checksum replay', () => {
       v.frames[3]!.frame = [7, [100, 1, 3]];
     });
     assert.throws(() => replayChecksums(capture([])));
+  });
+
+  test('capture drops an exact repeat of the same index and frame', () => {
+    const input = frames();
+    const doubled = [...input.slice(0, 2), { ...input[1]! }, ...input.slice(2), { ...input[3]! }];
+    const value = capture(doubled);
+    assert.equal(value.totalFrames, 4);
+    assert.equal(value.capturedFrames, 4);
+    assert.equal(value.truncated, false);
+    assert.deepEqual(
+      replayChecksums(value).map((r) => r.actual),
+      [599066899, -283178611],
+    );
+  });
+
+  test('capture keeps a conflicting frame under a repeated index, so replay fails closed', () => {
+    const input = frames();
+    const conflicting = [...input.slice(0, 2), { ...input[1]!, frame: [7, 'cs', 1] }, ...input.slice(2)];
+    const value = capture(conflicting);
+    assert.equal(value.capturedFrames, 5);
+    assert.throws(() => replayChecksums(value), /session or index order is invalid/);
+  });
+
+  test('pins the 2026-11-23 live recurrence: an unexplained divergence, not a correct-book oracle', () => {
+    // Run 45159119472 on main at fa7b39e; provenance in test/fixtures/live-01/README.md.
+    const envelope = liveRecurrence as ChecksumReplay;
+    assert.equal(envelope.truncated, false);
+    assert.deepEqual(
+      replayChecksums(envelope).map((r) => [r.csIndex, r.expected === r.actual]),
+      [
+        [27, false],
+        [77, false],
+        [191, true],
+        [291, true],
+        [331, true],
+      ],
+    );
   });
 
   test('enforces frame and UTF-8 byte budgets with explicit truncation', () => {

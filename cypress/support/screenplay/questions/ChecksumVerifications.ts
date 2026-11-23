@@ -72,7 +72,10 @@ export class ChecksumVerifications {
               return attachChecksumReplay(results, (byteBudget) => {
                 const sessionId = ws.diagnosticSessionId();
                 const throughIndex = selected[selected.length - 1]!.index;
-                const frames = [...dataFrames, ...selected]
+                // `frameType: 'data'` excludes only heartbeats, so `dataFrames` already
+                // holds every `cs` frame; adding `selected` again stored each one twice
+                // and made real evidence fail replay validation (LIVE-01, 2026-11-23).
+                const frames = dataFrames
                   .filter((entry) => entry.index <= throughIndex)
                   .sort((a, b) => a.index - b.index)
                   .map(({ index, frame }) => ({ sessionId, index, frame }));
