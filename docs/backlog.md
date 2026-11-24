@@ -8,8 +8,8 @@
 
 # bfx-ws-screenplay — Backlog
 
-**Version:** 21: LIVE-01 recurrence of 23 November recorded; replay capture repaired for review (2026-11-23)
-**Last Updated:** 2026-11-23
+**Version:** 22: LIVE-01 replay capture repair merged (2026-11-24)
+**Last Updated:** 2026-11-24
 **Based on:** `SPECIFICATION.md` (normative design spec), the SPEC-001..006 review packs (approved
 4–5 July 2026), code review v1 (`.review/CODE_REVIEW_CLAUDE_Fable_5_v1_20260706T1039Z/`,
 2026-07-06 — no HIGH findings), remediated by BFX-01..07 on
@@ -57,6 +57,8 @@ environment-blocked outcomes, so this is not eligible for the quiet-window pass-
 **Effort:** Unknown until the frame-ordering and book-fold root cause is reproduced
 **Status:** NEEDS INVESTIGATION (bounded replay/diagnostics merged; root cause unresolved)
 **Affected Stacks:** TypeScript/Cypress live Bitfinex WebSocket lane (SPEC-004)
+
+**Update (2026-11-24):** The replay capture repair merged in [PR #50](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/50) as `d9d89d8`; exact-main [CI #45294517487](https://github.com/GBrooks1970/bfx-ws-screenplay/actions/runs/45294517487) passed (144/144 unit tests, smoke 8/8). A future recurrence now attaches an envelope that `replayChecksums()` accepts. Root cause unresolved; status, score and the five-match assertion are unchanged.
 
 **Update (2026-11-23, recurrence and replay repair):** Scheduled run [#45159119472](https://github.com/GBrooks1970/bfx-ws-screenplay/actions/runs/45159119472) on `fa7b39e` failed SPEC-004 only: checksums at buffer indexes 27 and 77 diverged, then 191, 291 and 331 matched; the same SHA passed on 19 to 22 November. ADR-010 kept it red as one product failure. The attached replay envelope was complete but failed `replayChecksums()` because the capture stored every `cs` frame twice (`ChecksumVerifications` merged `selected` into `dataFrames`, which already held them). Plan `2026-11-23_live-01-replay-capture-repair.md` repairs the capture red-first, pins the de-duplicated envelope as `test/fixtures/live-01/2026-11-23_run-45159119472.json`, and records the offline replay: the production fold reproduces every result, and shifted boundaries, single-update omission, side flips, stale snapshot levels and a lost update at the only missing index (18) were all eliminated. See [recurrence and replay](investigations/2026-11-23_live-01-recurrence-replay.md). Root cause unresolved; status, score and the five-match assertion are unchanged. Approved follow-ups: index-only placeholders for non-data frames (separate plan) and a bounded owner-scheduled `diagnose:checksum` run.
 

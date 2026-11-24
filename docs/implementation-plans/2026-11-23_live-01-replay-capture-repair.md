@@ -4,9 +4,9 @@ created: 2026-11-23T19:52Z
 project: bfx-ws-screenplay
 type: implementation-plan
 item: LIVE-01 / replay-capture
-status: approved
+status: delivered
 approved: "2026-11-23, owner approved scope A, index-18 visibility A (separate later plan), live soak A (separate owner-scheduled run); owner retains merge authority"
-delivered: not yet
+delivered: "2026-11-24, PR #50 squash-merged as d9d89d8; exact-main CI run 45294517487 passed"
 language: en-GB
 ---
 
@@ -70,4 +70,13 @@ Specification first: no feature file, step definition, schema, folding rule, ADR
 
 ## Outcome
 
-[Appended after delivery.]
+Delivered on 24 November 2026. [PR #50](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/50) was squash-merged by the owner as `d9d89d8` at 00:07Z. Exact-main [CI run 45294517487](https://github.com/GBrooks1970/bfx-ws-screenplay/actions/runs/45294517487) passed: `smoke` succeeded and `extended` was skipped, as it is on every push (it runs on the nightly schedule).
+
+1. **Red first (step 1):** with the mock selecting through the production `frameMatches()`, the real-question test failed on unchanged `main` (6 frames captured, 4 expected). It passed after step 2.
+2. **Capture fixed (steps 2 and 3):** `ChecksumVerifications.ts` builds the replay frames from `dataFrames` only. `captureChecksumReplay()` drops an exact repeat of the previous index and frame and keeps a conflicting same-index entry, which `replayChecksums()` still rejects. Validation was not relaxed.
+3. **Fixture pinned (step 4):** `test/fixtures/live-01/2026-11-23_run-45159119472.json` (328 frames, `truncated: false`, `throughIndex` 331) replays to exactly [27 ✗, 77 ✗, 191 ✓, 291 ✓, 331 ✓]. Provenance is in `test/fixtures/live-01/README.md`.
+4. **Evidence and records (steps 5 to 7):** investigation note `docs/investigations/2026-11-23_live-01-recurrence-replay.md`, backlog v21 (LIVE-01 and DEP-03 updates, Risk Summary unchanged) and the plan index row.
+5. **Gates:** on exact-main CI, 144 of 144 unit tests passed in 39 suites, with 93.90% branch coverage overall and 96.61% for `checksumReplay.ts`; `audit:ci` reported 13 moderate and 0 HIGH; live smoke passed 8 of 8 specs. Locally on Node 24.18.0 before the PR, typecheck, lint, `lint:kanban` and the same unit suite passed (local branch figure 94.05%; the CI figure is the one of record).
+6. **Contract preserved:** the merge touched no `.feature` file, step definition, schema, `orderBook.ts`, `bookFolding.ts` or ADR-010 gate code. The five-consecutive-match assertion is unchanged.
+
+**Not delivered by design:** the LIVE-01 root cause is still unresolved (status NEEDS INVESTIGATION, score 10). The two approved follow-ups remain open: a separate plan for a `version: 2` envelope with index-only placeholders for non-data frames, and a bounded owner-scheduled `npm run diagnose:checksum` run. The implementation log is `docs/implementation-logs/2026-11-24_live-01-replay-capture.md`; it carries the merge date rather than the `2026-11-23` named in Delivery, following the log convention of the day it is written.
