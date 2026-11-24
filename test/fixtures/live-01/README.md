@@ -20,4 +20,8 @@ platform checksum. None of them is a correct-book oracle, and none of them prove
    Buffer index 18 is missing because the capture keeps only channel data frames; what index 18 was
    is unknown.
 
+The 23 November fixture is a version 1 envelope. Envelopes captured from 24 November onwards are
+version 2: they also carry a placeholder for every non-data buffer index, so a gap such as index 18
+is named rather than unknown. Keep any future fixture in the version it was captured in.
+
 Investigation: `docs/investigations/2026-11-23_live-01-recurrence-replay.md`.

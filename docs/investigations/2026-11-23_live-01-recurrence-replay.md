@@ -65,6 +65,23 @@ Each candidate was folded with the production modules and compared with the plat
 The out-of-band probe `npm run diagnose:checksum` (CHECKSUM + SEQ_ALL, raw tokens) can separate
 these. A bounded, owner-scheduled run is approved as a separate step.
 
+## Replay evidence version 2 (added 2026-11-24)
+
+The replay envelope gained a version 2 (plan `2026-11-24_live-01-replay-envelope-v2.md`). Index 18
+in this recurrence was not a book-channel data frame, because the capture keeps all of those; version
+1 could not say what it was. From version 2 onwards, an envelope attached to a mismatch covers every
+buffer index from 0 to the failing checksum:
+
+- `frames` holds the book channel's data frames, as in version 1, and is the only input to the fold.
+- `gaps` holds a placeholder for every other index: `heartbeat`, `event` (the event JSON, cut to 256
+  characters), `other-channel` (its channel ID and label), `unparsed` (the raw text the driver could
+  not parse, cut to 256 characters, with its full length) or `other`.
+- Replay rejects a version 2 envelope unless the two lists cover every index exactly once.
+
+At the next recurrence, read the `gaps` entries that fall between the snapshot and the first
+mismatching checksum before testing any book-fold hypothesis. The pinned 23 November fixture stays
+version 1 and still replays.
+
 ## Unrelated red run on 18 November
 
 Scheduled run 44282791003 (same SHA) failed at `audit:ci`, before any live test ran: npm audit then
