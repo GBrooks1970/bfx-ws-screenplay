@@ -4,9 +4,9 @@ created: 2026-11-24T00:19Z
 project: bfx-ws-screenplay
 type: implementation-plan
 item: LIVE-01 / envelope v2
-status: approved
+status: delivered
 approved: "2026-11-24, owner approved A/A/A/A: bounded placeholder detail, index range from 0, whole-buffer read only on a mismatch, no ADR; owner retains merge authority"
-delivered: not yet
+delivered: "2026-11-24, PR #52 squash-merged as 641fc6d; exact-main CI run 45395581637 passed"
 language: en-GB
 ---
 
@@ -115,4 +115,16 @@ Specification first: no feature file, step definition, schema, fold rule, driver
 
 ## Outcome
 
-[Appended after delivery.]
+Delivered on 24 November 2026. [PR #52](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/52) was squash-merged by the owner as `641fc6d` at 12:39Z. Exact-main [CI run 45395581637](https://github.com/GBrooks1970/bfx-ws-screenplay/actions/runs/45395581637) passed: `smoke` succeeded and `extended` was skipped, as it is on every push.
+
+1. **Red first (step 1):** with the new tests on unchanged code, 3 of 148 failed: the real question made no `peek` call, a valid version 2 envelope was rejected as invalid metadata, and the coverage rejection was never reached.
+2. **Classification and capture (step 2):** `classifyGap()` and `captureChecksumReplayV2()` in `checksumReplay.ts`. Data frames are budgeted before placeholders; the version 1 capture is kept for the pinned fixture and its tests.
+3. **Whole-buffer read on a mismatch only (step 3):** `ChecksumVerifications.ts` calls `peek({ kind: 'any' })` only when a checksum mismatches. A unit test proves the passing path makes no `peek` call.
+4. **Both versions replay (step 4):** version 1 is unchanged, and the pinned 23 November fixture still replays to [27 ✗, 77 ✗, 191 ✓, 291 ✓, 331 ✓]. Version 2 also requires well-formed, ordered placeholders with no extra keys and coverage of every index exactly once (13 rejection cases).
+5. **Docs (steps 5 and 6):** a "Replay evidence version 2" section in the 23 November investigation note, the fixture README, backlog v23 and the plan index row.
+6. **Gates:** on exact-main CI, 151 of 151 unit tests passed in 40 suites, with 94.46% branch coverage overall and 98.40% for `checksumReplay.ts`; `audit:ci` reported 13 moderate and 0 HIGH; live smoke passed 8 of 8 specs. Locally on Node 24.18.0, typecheck, lint, `lint:kanban` and `git diff --check` passed.
+7. **Contract preserved:** no `.feature` file, step definition, schema, `orderBook.ts`, `bookFolding.ts`, `node-driver/` file or ADR-010 gate code changed. The five-consecutive-match assertion is unchanged.
+
+**Deviations:** step 5's type change in `checksumDiagnostics.ts` was not needed, because its `replay?: ChecksumReplay` field now takes the version 1 / version 2 union. `ChecksumVerifications.ts` has one documented cast, because Cypress's typings cannot express a `.then` that returns either the results or a chain yielding them.
+
+**Not delivered by design:** no real version 2 envelope exists yet; one appears only at the next scheduled-run recurrence. The LIVE-01 root cause is unresolved (status NEEDS INVESTIGATION, score 10). The owner-scheduled `npm run diagnose:checksum` run remains open. The implementation log is `docs/implementation-logs/2026-11-24_live-01-replay-envelope-v2.md`.
