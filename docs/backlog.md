@@ -8,7 +8,7 @@
 
 # bfx-ws-screenplay — Backlog
 
-**Version:** 22: LIVE-01 replay capture repair merged (2026-11-24)
+**Version:** 23: LIVE-01 replay envelope version 2 for review (2026-11-24)
 **Last Updated:** 2026-11-24
 **Based on:** `SPECIFICATION.md` (normative design spec), the SPEC-001..006 review packs (approved
 4–5 July 2026), code review v1 (`.review/CODE_REVIEW_CLAUDE_Fable_5_v1_20260706T1039Z/`,
@@ -57,6 +57,8 @@ environment-blocked outcomes, so this is not eligible for the quiet-window pass-
 **Effort:** Unknown until the frame-ordering and book-fold root cause is reproduced
 **Status:** NEEDS INVESTIGATION (bounded replay/diagnostics merged; root cause unresolved)
 **Affected Stacks:** TypeScript/Cypress live Bitfinex WebSocket lane (SPEC-004)
+
+**Update (2026-11-24, envelope version 2):** Plan `2026-11-24_live-01-replay-envelope-v2.md` (approved A/A/A/A) adds a version 2 replay envelope. On a mismatch only, SPEC-004 reads the whole buffer once and records a bounded placeholder (heartbeat, event, other channel, unparsed text or other) for every non-data index from 0 to the failing checksum; replay rejects any envelope that does not cover every index exactly once. Version 1 still replays, so the pinned 23 November fixture is unchanged. The passing path makes no extra call. This names what a gap such as index 18 was at the next recurrence; it does not fix LIVE-01. Status, score and the five-match assertion are unchanged.
 
 **Update (2026-11-24):** The replay capture repair merged in [PR #50](https://github.com/GBrooks1970/bfx-ws-screenplay/pull/50) as `d9d89d8`; exact-main [CI #45294517487](https://github.com/GBrooks1970/bfx-ws-screenplay/actions/runs/45294517487) passed (144/144 unit tests, smoke 8/8). A future recurrence now attaches an envelope that `replayChecksums()` accepts. Root cause unresolved; status, score and the five-match assertion are unchanged.
 
