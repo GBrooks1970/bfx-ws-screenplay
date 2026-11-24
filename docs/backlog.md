@@ -8,8 +8,8 @@
 
 # bfx-ws-screenplay — Backlog
 
-**Version:** 20 — merged repairs reconciled; compatible DEP-03 fixes validated for review (2026-11-07)
-**Last Updated:** 2026-11-07
+**Version:** 21: LIVE-01 recurrence of 23 November recorded; replay capture repaired for review (2026-11-23)
+**Last Updated:** 2026-11-23
 **Based on:** `SPECIFICATION.md` (normative design spec), the SPEC-001..006 review packs (approved
 4–5 July 2026), code review v1 (`.review/CODE_REVIEW_CLAUDE_Fable_5_v1_20260706T1039Z/`,
 2026-07-06 — no HIGH findings), remediated by BFX-01..07 on
@@ -57,6 +57,8 @@ environment-blocked outcomes, so this is not eligible for the quiet-window pass-
 **Effort:** Unknown until the frame-ordering and book-fold root cause is reproduced
 **Status:** NEEDS INVESTIGATION (bounded replay/diagnostics merged; root cause unresolved)
 **Affected Stacks:** TypeScript/Cypress live Bitfinex WebSocket lane (SPEC-004)
+
+**Update (2026-11-23, recurrence and replay repair):** Scheduled run [#45159119472](https://github.com/GBrooks1970/bfx-ws-screenplay/actions/runs/45159119472) on `fa7b39e` failed SPEC-004 only: checksums at buffer indexes 27 and 77 diverged, then 191, 291 and 331 matched; the same SHA passed on 19 to 22 November. ADR-010 kept it red as one product failure. The attached replay envelope was complete but failed `replayChecksums()` because the capture stored every `cs` frame twice (`ChecksumVerifications` merged `selected` into `dataFrames`, which already held them). Plan `2026-11-23_live-01-replay-capture-repair.md` repairs the capture red-first, pins the de-duplicated envelope as `test/fixtures/live-01/2026-11-23_run-45159119472.json`, and records the offline replay: the production fold reproduces every result, and shifted boundaries, single-update omission, side flips, stale snapshot levels and a lost update at the only missing index (18) were all eliminated. See [recurrence and replay](investigations/2026-11-23_live-01-recurrence-replay.md). Root cause unresolved; status, score and the five-match assertion are unchanged. Approved follow-ups: index-only placeholders for non-data frames (separate plan) and a bounded owner-scheduled `diagnose:checksum` run.
 
 **Update (2026-11-07, diagnostic harness):** Owner approved implementation plan `2026-11-07_live-01-investigation-and-backlog-alignment.md`. Delivered out-of-band diagnostic script `scripts/diagnose-orderbook-checksum.ts` (npm script `diagnose:checksum`) combining `CHECKSUM` (131072) and `SEQ_ALL` (65536) flags to isolate sequence monotonicity and raw wire tokens without touching production Cucumber schemas. 141 deterministic unit tests pass; branch coverage 94.03%. Post-merge Handover v10 registered. LIVE-01 remains open pending root-cause evidence.
 
@@ -111,6 +113,8 @@ change note before framework code.
 **Priority Score:** Security Impact (3) + Breakage Probability (2) + Maintenance Burden (3) = **8 points**
 **Status:** IN PROGRESS — two compatible resolutions validated for owner review; residual chains remain open.
 **Effort:** Assess supported parent updates before estimating implementation.
+**Update (2026-11-23):** Scheduled run 44282791003 (18 November, `fa7b39e`) failed at `audit:ci` because npm audit then reported 10 HIGH advisories (picomatch ReDoS, GHSA-fc5q-39xc-vjpf). On 23 November the same lockfile reported 13 moderate and 0 HIGH, and the gate passed. Recorded as a transient advisory-severity red; no dependency change.
+
 **Update (2026-11-07):** Within existing manifest ranges, the lockfile now resolves `qs` 6.16.0 → 6.17.1 and `serialize-javascript` 7.0.7 → 7.1.4. Fresh full audit reports **19 MODERATE, zero LOW/HIGH/CRITICAL** affected package entries; the HIGH gate passes. Remaining direct advisory roots are glob and minimatch, with dependent chains. npm's proposed preprocessor fix is a major downgrade to 15.1.4, so it is not applied automatically. Direct pins, overrides and Node >=20 remain unchanged. Typecheck, lint, 130/130 unit tests and coverage pass; Node 20 also passes 130/130 and typecheck. This is partial remediation, not residual-risk acceptance. See the [plan](implementation-plans/2026-11-07_dep-03-compatible-fixes-and-status.md).
 
 **Update (2026-11-04):** After DEP-02, full audit retains 21 MODERATE and one LOW affected package entries (including dependent chains), zero HIGH/CRITICAL. Direct advisory roots include glob, minimatch, serialize-javascript and qs; the policy captures the full affected-package list. These are current findings, not reopening the historical September DEP-01 resolution. Avoid forced framework downgrades or unapproved major upgrades. Coordinate any Cypress/Node migration with Risk #1.
